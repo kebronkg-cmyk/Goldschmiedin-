@@ -400,6 +400,102 @@
     el.textContent = gewaehlt.length ? `Auf dem Stein: ${liste(gewaehlt)}.` : '';
   }
 
+
+  /* ───── Unterschrift als Probierstrich: matter Goldabrieb entlang der Federlinie ───── */
+  const GOLD = [218, 181, 104]; // --mattgold als sRGB
+  const strichFelder = $$('.strich-feld');
+  const strichFasern = (n, saat) => {
+    const zz = zufall(saat);
+    return Array.from({ length: n }, (_, i) => ({
+      i, o: (zz() + zz() + zz()) / 1.5 - 1, w: 0.45 + zz() * 0.9, a: (0.22 + zz() * 0.4),
+      h: zz() * 0.22 - 0.08, wackel: zz() * 6.28,
+    }));
+  };
+  const einrichten = (feld) => {
+    const svg = $('.feder', feld), cv = $('canvas.strich', feld);
+    if (!svg || !cv || !cv.getContext) return null;
+    const pfade = $$('path', svg);
+    const zuege = pfade.map((pfad, k) => {
+      const L = pfad.getTotalLength(), n = Math.max(2, Math.ceil(L / 0.35));
+      const pts = [];
+      for (let j = 0; j <= n; j++) { const q = pfad.getPointAtLength((L * j) / n); pts.push([q.x, q.y]); }
+      const st = pfad.style;
+      return { pts, v: parseFloat(st.getPropertyValue('--v')) || 0, t: parseFloat(st.getPropertyValue('--t')) || 0.3, fasern: strichFasern(9, 101 + k * 7), bis: 0 };
+    });
+    const ctx = cv.getContext('2d');
+    const zustand = { feld, svg, cv, ctx, zuege, start: 0, laeuft: false, fertig: false };
+    const masse = () => {
+      const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+      cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+      const sv = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+      zustand.s = (sv.width / vb.width) * dpr;
+      zustand.ox = (sv.left - r.left) * dpr - vb.x * zustand.s;
+      zustand.oy = (sv.top - r.top) * dpr - vb.y * zustand.s;
+      zustand.dicke = Math.max(2.4 * dpr, 0.95 * zustand.s);
+      zustand.zuege.forEach((z) => { z.bis = 0; });
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      if (zustand.fertig) zeichneBis(zustand, Infinity);
+    };
+    zustand.masse = masse;
+    masse();
+    new ResizeObserver(() => masse()).observe(feld);
+    feld.classList.add('strich-an');
+    return zustand;
+  };
+  // Zeichnet jeden Zug bis zur Zeit t (Sekunden) weiter; nur das Neue wird gemalt.
+  const zeichneBis = (z, t) => {
+    const { ctx, s, ox, oy, dicke } = z;
+    ctx.lineCap = 'round';
+    for (const zug of z.zuege) {
+      const anteil = t === Infinity ? 1 : Math.min(1, Math.max(0, (t - zug.v) / zug.t));
+      const ziel = Math.floor(anteil * (zug.pts.length - 1));
+      if (ziel <= zug.bis) continue;
+      for (const f of zug.fasern) {
+        ctx.globalAlpha = f.a;
+        const d = f.h * 255;
+        ctx.strokeStyle = `rgb(${GOLD[0] + d | 0},${GOLD[1] + d | 0},${GOLD[2] + d | 0})`;
+        ctx.lineWidth = f.w * Math.max(1, s / 3.2);
+        ctx.beginPath();
+        let offen = false;
+        for (let j = Math.max(0, zug.bis - 1); j <= ziel; j++) {
+          if (hash(f.i + zug.v * 13, Math.floor(j / 9)) < 0.07) { offen = false; continue; }
+          const a = zug.pts[Math.max(0, j - 1)], b = zug.pts[Math.min(zug.pts.length - 1, j + 1)];
+          let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
+          const o = f.o * dicke / 2 + Math.sin(j / 7 + f.wackel) * 0.35 * (dicke / 4);
+          const x = ox + zug.pts[j][0] * s + nx * o, y = oy + zug.pts[j][1] * s + ny * o;
+          if (offen) ctx.lineTo(x, y); else { ctx.moveTo(x, y); offen = true; }
+        }
+        ctx.stroke();
+      }
+      zug.bis = ziel;
+    }
+    ctx.globalAlpha = 1;
+  };
+  const streichen = (z) => {
+    if (!z || z.laeuft || z.fertig) return;
+    if (ruhig.matches) { z.fertig = true; zeichneBis(z, Infinity); return; }
+    z.laeuft = true;
+    const ende = Math.max(...z.zuege.map((q) => q.v + q.t));
+    const start = performance.now();
+    const schritt = (jetzt) => {
+      const t = (jetzt - start) / 1000;
+      zeichneBis(z, t);
+      if (t < ende + 0.05) requestAnimationFrame(schritt);
+      else { z.laeuft = false; z.fertig = true; }
+    };
+    requestAnimationFrame(schritt);
+  };
+  if (strichFelder.length) {
+    const fertigZustaende = strichFelder.map(einrichten);
+    const [auftakt, ...rest] = fertigZustaende;
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(() => streichen(auftakt), 350));
+    rest.forEach((z) => {
+      if (!z) return;
+      const b = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { streichen(z); b.disconnect(); } }, { threshold: 0.6 });
+      b.observe(z.feld);
+    });
+  }
+
   /* ───── Anfrage: Auswahl → Nachricht ───── */
   const form = $('.baukasten');
   const feld = form && $('textarea', form);

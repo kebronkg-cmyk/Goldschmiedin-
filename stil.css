@@ -1,5 +1,7 @@
-/* Goldschmiedin Michaela Kusche — Feldbuch der Sammlerin
-   Jedes Kapitel ein Bogen in der Farbe eines ihrer Materialien, die echte Textur darüber.
+/* Goldschmiedin Michaela Kusche — Probierstein
+   Die Seite ist der schwarze Probierstein der Werkstatt; einzelne Kapitel liegen als
+   Materialproben darauf (Disthen, Rost, gebürstetes Gold). Die Ebene „Probierstein“ am
+   Ende dieser Datei setzt die Welt; das Gerüst darüber teilt sie mit der Feldbuch-Fassung.
    Grundfarben aus den Texturen gemessen (werkzeug/texturen.py → bilder/textur/farben.json),
    für Text abgedunkelt bzw. aufgehellt, bis der Kontrast hält.                          */
 
@@ -12,6 +14,11 @@
   font-family: "Piazzolla";
   src: url("schrift/piazzolla-kursiv.woff2") format("woff2");
   font-weight: 100 900; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Imbue";
+  src: url("schrift/imbue.woff2") format("woff2");
+  font-weight: 100 900; font-style: normal; font-display: swap;
 }
 @font-face {
   font-family: "Cutive Mono";
@@ -246,7 +253,8 @@ button { cursor: pointer; }
 .auftakt { padding-top: clamp(1.5rem, 0.5rem + 3vw, 3rem); padding-bottom: clamp(1.5rem, 1rem + 1.5vw, 2.5rem); overflow: hidden; }
 .auftakt-raster {
   display: grid; align-items: center;
-  grid-template-columns: calc(var(--seitenrand) - var(--rand)) minmax(0, 32rem) clamp(2rem, 5vw, 6rem) minmax(0, 1fr) calc(var(--seitenrand) - var(--rand));
+  /* 100 % ist hier die Innenbreite des Bogens (Fenster minus Rand) */
+  grid-template-columns: max(0px, (100% - var(--breite)) / 2) minmax(0, 32rem) clamp(2rem, 5vw, 6rem) minmax(0, 1fr) max(0px, (100% - var(--breite)) / 2);
 }
 .auftakt-text { grid-column: 2; display: grid; gap: 1.6rem; justify-items: start; }
 .auftakt h1 { font-size: clamp(2.7rem, 1.4rem + 4vw, 5rem); font-weight: 300; line-height: 1.02; letter-spacing: -0.022em; }
@@ -595,6 +603,94 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
 .text-seite p, .text-seite li { color: oklch(38% 0.035 262); }
 .text-seite address { font-style: normal; }
 .text-seite ul { list-style: disc; padding-left: 1.25rem; display: grid; gap: 0.35rem; }
+
+/* ═════════ Ebene „Probierstein“ ═════════ */
+
+:root {
+  --stein: oklch(17.5% 0.006 250);
+  --stein-tief: oklch(14% 0.006 250);
+  --stein-kante: oklch(30% 0.008 250);
+  --silber: oklch(93% 0.006 90);
+  --silber-leise: oklch(80% 0.01 90);
+  --titel: "Imbue", "Didot", "Bodoni 72", serif;
+  --text: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --zettel: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --t-zettel: 0.875rem;
+}
+/* Der Stein liegt einmal unter der ganzen Seite — keine Kanten zwischen den Abschnitten */
+body { background: var(--stein) url("bilder/textur/stein.webp") 0 0 / 900px auto repeat; color: var(--silber); font-weight: 380; line-height: 1.65; }
+::selection { background: var(--mattgold); color: var(--stein); }
+h1, h2, h3, .satz, .wort, .reiter [role="tab"], .frage legend, .leistungen dt, .gruss p, .fede-zitat {
+  font-family: var(--titel); font-optical-sizing: auto;
+}
+h1, h2, h3, .satz { font-weight: 330; letter-spacing: -0.005em; line-height: 1.02; }
+.satz { font-size: clamp(2.4rem, 1.3rem + 3.6vw, 4.6rem); max-width: 20ch; }
+.satz-nach { font-family: var(--text); font-size: 1.1875rem; font-weight: 360; line-height: 1.6; }
+.bogen-stein {
+  --b-grund: var(--stein); --b-text: var(--silber); --b-leise: var(--silber-leise);
+  --b-linie: color-mix(in oklch, var(--silber) 16%, transparent);
+  --knopf-grund: var(--mattgold); --knopf-text: var(--stein);
+}
+.bogen-stein { background-color: transparent; }
+.bogen-stein::before { content: none; }
+.bogen-disthen, .bogen-rost, .bogen-gold { margin-inline: clamp(0rem, 2vw, 2rem); }
+
+/* Leiste und Fuß aus demselben Stein */
+.leiste { background: color-mix(in oklch, var(--stein-tief) 94%, transparent); border-bottom: 1px solid var(--stein-kante); }
+.leiste-kapitel { font-family: var(--titel); font-size: 1.15rem; color: var(--silber-leise); }
+.haupt-nav a, .leiste-tel, .leiste-anfrage { font-size: 0.9375rem; letter-spacing: 0.01em; }
+.fuss { background: var(--stein-tief); border-top: 1px solid var(--stein-kante); color: var(--silber-leise); }
+.fuss a { color: var(--silber); }
+
+/* Auftakt: der Satz in Imbue, die Unterschrift als Goldstrich auf dem Stein */
+.auftakt h1 { font-size: clamp(3rem, 1.4rem + 5.2vw, 6.2rem); font-weight: 300; line-height: 0.98; letter-spacing: 0; }
+.auftakt-lead { font-size: 1.125rem; }
+.auftakt-bild .fundzettel { background: none; box-shadow: none; transform: none; padding: 0; color: var(--silber-leise); }
+.auftakt-bild .fundzettel .etikett-stein { color: var(--silber); }
+.fund .lupe-flaeche { box-shadow: 0 1.6rem 2.6rem -1.2rem oklch(0% 0 0 / 0.75), 0 0.2rem 0.5rem oklch(0% 0 0 / 0.5); }
+.knopf { font-family: var(--text); font-weight: 560; font-size: 1rem; letter-spacing: 0.01em; box-shadow: 0 0.6rem 1.4rem -0.7rem oklch(0% 0 0 / 0.8); }
+.knopf-leise { font-family: var(--text); font-size: 1rem; }
+.strich-feld { position: relative; }
+.strich { position: absolute; inset: -6% -1% -10% -1%; width: 102%; height: 116%; pointer-events: none; }
+.strich-an .feder { opacity: 0; }
+
+/* Dreischritt: Imbue, gefüllt mit Disthen, Gold und Rost */
+.wort { font-size: clamp(3.6rem, 1rem + 11vw, 12.5rem); font-weight: 520; letter-spacing: -0.01em; line-height: 0.92; }
+.dreischritt .klein { font-family: var(--titel); font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem); font-style: normal; }
+.dreischritt .rest { font-family: var(--text); font-size: 1.1875rem; line-height: 1.6; }
+
+/* Galerie und Angaben */
+.reiter [role="tab"] { font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem); font-weight: 330; }
+.fundzettel, .etikett { font-size: var(--t-zettel); letter-spacing: 0; }
+.punze { font-family: var(--text); font-weight: 600; border-color: var(--mattgold); color: var(--b-text); }
+.galerie .stueck-bild img { box-shadow: 0 1.2rem 2rem -1.2rem oklch(0% 0 0 / 0.85); }
+.erhaeltlich { font-family: var(--text); }
+.krokodil-text h3, .fede-text h3 { font-size: clamp(2.4rem, 1.4rem + 3vw, 4.2rem); }
+.fede-zitat { font-style: normal; font-size: clamp(1.5rem, 1.2rem + 1vw, 2.1rem); line-height: 1.32; }
+.fundstueck h3 { font-size: clamp(1.6rem, 1.3rem + 1vw, 2.2rem); }
+
+/* Proben auf dem Stein: Disthen, Rost, Gold mit einer feinen Kante wie eingelegt */
+.bogen-disthen, .bogen-rost, .bogen-gold { box-shadow: 0 0 0 1px var(--stein-kante), 0 2rem 4rem -2rem oklch(0% 0 0 / 0.8); }
+.leistungen dt { font-size: clamp(1.4rem, 1.15rem + 0.8vw, 1.9rem); }
+
+/* Anfrage auf dem Stein */
+.chips span, .nadel span { background: oklch(21% 0.006 250); border-color: var(--b-linie); font-family: var(--text); font-size: 1rem; }
+.chips input:checked + span, .nadel input:checked + span { background: var(--silber); color: var(--stein); border-color: var(--silber); }
+.chips input:focus-visible + span, .nadel input:focus-visible + span { outline-color: var(--silber); }
+.frage legend { font-size: clamp(1.5rem, 1.2rem + 1vw, 2.1rem); }
+.probierstein { box-shadow: 0 0 0 1px var(--stein-kante), 0 1.6rem 2.6rem -1.4rem oklch(0% 0 0 / 0.9); }
+.feld input, .brief textarea { background: oklch(21% 0.006 250); color: var(--silber); border-color: var(--b-linie); box-shadow: none; }
+.feld input::placeholder { color: oklch(66% 0.01 90); }
+.brief textarea { font-family: var(--text); }
+
+/* Besuch */
+.besuch-adresse h2 span { font-family: var(--titel); }
+.gruss p { font-size: clamp(2rem, 1.3rem + 2.4vw, 3.6rem); }
+.gruss-feder { width: min(46rem, 92%); }
+.gruss .feder { width: 100%; }
+
+/* Ansicht */
+.ansicht { background: oklch(12% 0.006 250 / 0.97); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
