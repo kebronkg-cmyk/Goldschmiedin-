@@ -1,0 +1,364 @@
+{
+ "disthen-brosche": {
+  "b": 3872,
+  "h": 2592,
+  "breiten": [
+   480,
+   800,
+   1200,
+   1800,
+   3200
+  ]
+ },
+ "mantelring": {
+  "b": 1179,
+  "h": 794,
+  "breiten": [
+   480,
+   800,
+   1179
+  ]
+ },
+ "citrin-ring": {
+  "b": 600,
+  "h": 800,
+  "breiten": [
+   480,
+   600
+  ]
+ },
+ "opal-ring": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "amethyst-ring": {
+  "b": 1071,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1071
+  ]
+ },
+ "lapis-ring": {
+  "b": 1188,
+  "h": 781,
+  "breiten": [
+   480,
+   800,
+   1188
+  ]
+ },
+ "brillant-ring-bicolor": {
+  "b": 1108,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1108
+  ]
+ },
+ "brillant-ring-pave": {
+  "b": 1066,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1066
+  ]
+ },
+ "brillant-ring-quadrat": {
+  "b": 1066,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1066
+  ]
+ },
+ "brillant-ohrstecker": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "lapis-malachit-ohrstecker": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "samenkapsel-ohrstecker": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "amethyst-ohrhaenger": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "quarz-ohrhaenger": {
+  "b": 1195,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1195
+  ]
+ },
+ "bernstein-ohrstecker": {
+  "b": 1195,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1195
+  ]
+ },
+ "citrin-ohrhaenger": {
+  "b": 1139,
+  "h": 793,
+  "breiten": [
+   480,
+   800,
+   1139
+  ]
+ },
+ "glas-kette": {
+  "b": 1195,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1195
+  ]
+ },
+ "keramik-kette": {
+  "b": 1195,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1195
+  ]
+ },
+ "aquamarin-anhaenger": {
+  "b": 1195,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1195
+  ]
+ },
+ "turmalin-anhaenger": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "opal-anhaenger": {
+  "b": 547,
+  "h": 800,
+  "breiten": [
+   480,
+   547
+  ]
+ },
+ "bernstein-kette": {
+  "b": 1066,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1066
+  ]
+ },
+ "barockperlen": {
+  "b": 1066,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1066
+  ]
+ },
+ "perlen-reihen": {
+  "b": 1066,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1066
+  ]
+ },
+ "keshi-perlen": {
+  "b": 1066,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1066
+  ]
+ },
+ "turmalin-brosche": {
+  "b": 1536,
+  "h": 2048,
+  "breiten": [
+   480,
+   800,
+   1200,
+   1536
+  ]
+ },
+ "chrysokoll-brosche": {
+  "b": 1019,
+  "h": 677,
+  "breiten": [
+   480,
+   800,
+   1019
+  ]
+ },
+ "chip-brosche": {
+  "b": 1573,
+  "h": 2352,
+  "breiten": [
+   480,
+   800,
+   1200,
+   1573
+  ]
+ },
+ "steine-opale": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "steine-farben": {
+  "b": 1067,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   1067
+  ]
+ },
+ "krokodilring-ast": {
+  "b": 1530,
+  "h": 1420,
+  "breiten": [
+   480,
+   800,
+   1200,
+   1530
+  ]
+ },
+ "krokodilring-hand": {
+  "b": 862,
+  "h": 800,
+  "breiten": [
+   480,
+   800,
+   862
+  ]
+ },
+ "fede-ring": {
+  "b": 520,
+  "h": 306,
+  "breiten": [
+   480,
+   520
+  ]
+ },
+ "samenkapseln": {
+  "b": 1764,
+  "h": 1181,
+  "breiten": [
+   480,
+   800,
+   1200,
+   1764
+  ]
+ },
+ "mayakoenige": {
+  "b": 1151,
+  "h": 792,
+  "breiten": [
+   480,
+   800,
+   1151
+  ]
+ },
+ "froesche": {
+  "b": 1084,
+  "h": 667,
+  "breiten": [
+   480,
+   800,
+   1084
+  ]
+ },
+ "portraet": {
+  "b": 243,
+  "h": 338,
+  "breiten": [
+   243
+  ]
+ },
+ "werkbrett": {
+  "b": 378,
+  "h": 379,
+  "breiten": [
+   378
+  ]
+ },
+ "werkzeug": {
+  "b": 400,
+  "h": 300,
+  "breiten": [
+   400
+  ]
+ },
+ "laden": {
+  "b": 375,
+  "h": 375,
+  "breiten": [
+   375
+  ]
+ },
+ "eheringe-ebenholz": {
+  "b": 418,
+  "h": 387,
+  "breiten": [
+   418
+  ]
+ }
+}
