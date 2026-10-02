@@ -81,9 +81,9 @@ def galerie(name):
         a, gross = bildattrs(bild)
         sizes = "(min-width: 60em) 24rem, (min-width: 40em) 31vw, 46vw" if name != "steine" else "(min-width: 60em) 40vw, 92vw"
         metall_html = f'\n      <span class="etikett-metall">{punzen(metall)}</span>' if metall else ""
-        zeilen.append(f'''  <li class="stueck zeigen">
+        zeilen.append(f'''  <li class="stueck">
     <button class="stueck-bild" type="button" data-gross="{gross}"><img src="{a['src']}" srcset="{a['srcset']}" sizes="{sizes}" width="{a['width']}" height="{a['height']}" loading="lazy" alt="{html.escape(alt)}"></button>
-    <p class="etikett"><span class="etikett-stein">{html.escape(stein)}</span>{metall_html}</p>
+    <p class="etikett fundzettel"><span class="etikett-stein">{html.escape(stein)}</span>{metall_html}</p>
   </li>''')
     zeilen.append("</ul>")
     return "\n".join(zeilen)
@@ -110,6 +110,28 @@ def schreibt():
             f'<g class="schreibzuege" fill="none" stroke="#fff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round">'
             + "".join(pfade) +
             f'</g></mask></defs><use href="#unterschrift" mask="url(#schreibmaske)"/></svg>')
+
+
+def feder(name):
+    """Die Unterschrift als feiner Federstrich (Mittellinie), Zug für Zug geschrieben.
+
+    Tempo aus der gemessenen Länge: gleichmäßige Federgeschwindigkeit, kleine Pause,
+    wo die Feder absetzt. Die Zeiten stehen als --v (Beginn) und --t (Dauer) am Pfad;
+    wann geschrieben wird, entscheidet das CSS (Klasse .schreibt am SVG).
+    """
+    u = ZEICHEN["unterschrift"]
+    tempo = 215.0  # Einheiten der viewBox pro Sekunde (≈ 4 s für die ganze Unterschrift)
+    t, pfade, letzt_x = 0.0, [], None
+    for z in u["feder"]:
+        if letzt_x is not None and z["x"] - letzt_x > 9:
+            t += 0.22  # Feder setzt ab
+        d = max(0.05, z["l"] / tempo)
+        pfade.append(f'<path pathLength="1" style="--v:{t:.2f}s;--t:{d:.2f}s" d="{z["d"]}"/>')
+        t += d * 0.92
+        letzt_x = z["x"] + 4
+    return (f'<svg class="feder feder-{name}" viewBox="-2 -2 304 45" role="img" aria-label="Michaela Kusche" '
+            f'data-dauer="{t:.2f}"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'
+            + "".join(pfade) + "</g></svg>")
 
 
 def zwischen(s, marke, inhalt):
@@ -141,6 +163,8 @@ def main():
         s = pfad.read_text()
         s = zwischen(s, "zeichen", sprite())
         s = zwischen(s, "unterschrift:schreibt", schreibt())
+        for name in ("auftakt", "gruss", "fuss"):
+            s = zwischen(s, f"feder:{name}", feder(name))
         for name in GALERIEN:
             s = zwischen(s, f"galerie:{name}", "\n" + galerie(name) + "\n")
         s = img_fuellen(s)
