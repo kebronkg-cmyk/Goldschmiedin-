@@ -53,6 +53,20 @@ def gebuerstet(farbe, breite, hoehe, saat=11):
     bild = f * (1 + korn[..., None] * 0.07)
     return Image.fromarray(bild.clip(0, 255).astype("uint8"))
 
+def schiefer(groesse=900, saat=5):
+    """Probierstein (Kieselschiefer): erzeugt, nicht fotografiert — nahtloses Korn mit feinen Adern."""
+    from scipy.ndimage import gaussian_filter
+    rng = np.random.default_rng(saat)
+    grob = gaussian_filter(rng.normal(0, 1, (groesse, groesse)), 60, mode="wrap")
+    mittel = gaussian_filter(rng.normal(0, 1, (groesse, groesse)), 6, mode="wrap")
+    fein = rng.normal(0, 1, (groesse, groesse))
+    adern = np.abs(gaussian_filter(rng.normal(0, 1, (groesse, groesse)), (90, 18), mode="wrap"))
+    adern = np.exp(-(adern / adern.std() * 9) ** 2)            # schmale, helle Linien
+    h = 0.0 + grob / grob.std() * 0.008 + mittel / mittel.std() * 0.008 + fein * 0.016 + adern * 0.008
+    basis = np.array([15, 17, 19], float) / 255                 # #0f1113, wie der Stein in der Anfrage
+    bild = (basis[None, None, :] + h[..., None] * np.array([1.0, 1.02, 1.06])[None, None, :]) * 255
+    return Image.fromarray(bild.clip(0, 255).astype("uint8"))
+
 def main():
     Z.mkdir(parents=True, exist_ok=True)
     b2 = Image.open(Q / "media__Broschen__b2.jpg").convert("RGB")
@@ -69,6 +83,8 @@ def main():
         "rinde": nahtlos_senkrecht(nahtlos_waagrecht(sam.crop((0, 0, 700, 300)), 90), 60),
         # Flechte vom Ast des Krokodilrings
         "flechte": kro.crop((0, 560, 640, 1100)),
+        # Probierstein — erzeugt (kein Foto vorhanden), Farbe des Steins aus der Anfrage
+        "stein": schiefer(),
     }
     farben = {}
     for n, b in aus.items():
