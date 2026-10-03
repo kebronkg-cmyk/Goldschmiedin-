@@ -67,6 +67,23 @@ def schiefer(groesse=900, saat=5):
     bild = (basis[None, None, :] + h[..., None] * np.array([1.0, 1.02, 1.06])[None, None, :]) * 255
     return Image.fromarray(bild.clip(0, 255).astype("uint8"))
 
+def farbton_drehen(bild, ziel_h, ziel_c_faktor=1.0, l_versatz=0.0):
+    """Gleiche Fasern, anderer Stein: dreht den Farbton in OKLCH (Helligkeit und Korn bleiben)."""
+    a = np.asarray(bild).astype(float) / 255
+    lin = np.where(a <= 0.04045, a / 12.92, ((a + 0.055) / 1.055) ** 2.4)
+    M1 = np.array([[0.4122214708, 0.5363325363, 0.0514459929], [0.2119034982, 0.6806995451, 0.1073969566], [0.0883024619, 0.2817188376, 0.6299787005]])
+    M2 = np.array([[0.2104542553, 0.7936177850, -0.0040720468], [1.9779984951, -2.4285922050, 0.4505937099], [0.0259040371, 0.7827717662, -0.8086757660]])
+    lab = np.cbrt(lin @ M1.T) @ M2.T
+    L, A, B = lab[..., 0], lab[..., 1], lab[..., 2]
+    C = np.hypot(A, B); H = np.arctan2(B, A)
+    mittel = np.degrees(np.angle(np.mean(np.exp(1j * H) * C)))
+    H = H + np.radians(ziel_h - mittel); C = C * ziel_c_faktor; L = L + l_versatz
+    lab = np.stack([L, C * np.cos(H), C * np.sin(H)], -1)
+    lms = (lab @ np.linalg.inv(M2).T) ** 3
+    lin = np.clip(lms @ np.linalg.inv(M1).T, 0, 1)
+    srgb = np.where(lin <= 0.0031308, lin * 12.92, 1.055 * lin ** (1 / 2.4) - 0.055)
+    return Image.fromarray((srgb * 255).round().astype("uint8"))
+
 def main():
     Z.mkdir(parents=True, exist_ok=True)
     b2 = Image.open(Q / "media__Broschen__b2.jpg").convert("RGB")
@@ -83,9 +100,12 @@ def main():
         "rinde": nahtlos_senkrecht(nahtlos_waagrecht(sam.crop((0, 0, 700, 300)), 90), 60),
         # Flechte vom Ast des Krokodilrings
         "flechte": kro.crop((0, 560, 640, 1100)),
+        # Smaragd: dieselben Fasern wie der Disthen, Farbton auf Smaragdgrün gedreht
+        "smaragd": None,
         # Probierstein — erzeugt (kein Foto vorhanden), Farbe des Steins aus der Anfrage
         "stein": schiefer(),
     }
+    aus["smaragd"] = farbton_drehen(aus["disthen"], 162, 1.05, -0.02)
     farben = {}
     for n, b in aus.items():
         b.save(Z / f"{n}.webp", "WEBP", quality=78, method=6)

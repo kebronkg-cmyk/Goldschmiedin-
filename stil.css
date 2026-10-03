@@ -28,15 +28,16 @@
   /* Materialfarben */
   --disthen: oklch(37% 0.115 262);       /* Disthen der Brosche, vertieft */
   --tinte: oklch(20.5% 0.042 264);       /* blauschwarze Tinte */
-  --rinde: oklch(92.6% 0.004 95);        /* Birkenrinde unter den Samenkapseln */
+  --rinde: oklch(93% 0.007 160);         /* Birkenrinde, ein Hauch Jade */
   --rost: oklch(41% 0.085 50);           /* der Stein unter der Brosche, vertieft */
-  --moos: oklch(27.6% 0.031 121);        /* Grund hinter dem Krokodilring */
   --champagner: oklch(82% 0.05 82);      /* gebürstetes, mattiertes Gold, aufgehellt */
   --mattgold: oklch(80% 0.1 82);         /* Unterschrift und Ornament, nie Fließtext */
-  /* Ladengrün: der Wandsockel im Laden (Foto gemessen 60 % 0.09 122, Belichtung ausgeglichen) */
-  --ladengruen: oklch(66% 0.12 124);
-  --ladengruen-hell: oklch(82% 0.13 124);  /* Akzent auf dunklem Grund */
-  --ladengruen-tief: oklch(40% 0.085 124); /* Akzent auf hellem Grund */
+  /* Smaragd: dieselben Fasern wie der Disthen, Farbton gedreht (werkzeug/texturen.py).
+     Das Grün des Ladens, als Edelstein gedacht; Disthenblau und Smaragd sind Geschwister. */
+  --smaragd: oklch(37% 0.085 163);
+  --smaragd-tief: oklch(22% 0.045 168);
+  --jade: oklch(84% 0.085 163);           /* Akzent auf dunklem Grund */
+  --smaragd-akzent: oklch(42% 0.1 163);   /* Akzent auf hellem Grund */
   --stein: oklch(17.5% 0.006 250);       /* Probierstein */
 
   /* Text auf hellem und dunklem Grund */
@@ -89,7 +90,7 @@ body {
   font-optical-sizing: auto; font-kerning: normal; -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
-::selection { background: var(--ladengruen-hell); color: var(--tinte); }
+::selection { background: var(--jade); color: var(--tinte); }
 img { display: block; max-width: 100%; height: auto; }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.24em; }
 :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
@@ -118,7 +119,7 @@ button { cursor: pointer; }
   padding-top: var(--abschnitt); padding-bottom: var(--abschnitt); padding-left: var(--rand); padding-right: var(--rand);
   --b-leise: color-mix(in oklch, var(--b-text) 76%, var(--b-grund));
   --b-linie: color-mix(in oklch, var(--b-text) 22%, transparent);
-  --b-akzent: var(--ladengruen-hell);
+  --b-akzent: var(--jade);
 }
 .bogen::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
@@ -138,7 +139,7 @@ button { cursor: pointer; }
   --b-textur: url("bilder/textur/rinde.webp"); --b-groesse: 1720px auto;
   --b-mischung: multiply; --b-deckkraft: 0.28;
   --b-leise: oklch(38% 0.035 262);
-  --b-akzent: var(--ladengruen-tief);
+  --b-akzent: var(--smaragd-akzent);
 }
 .bogen-rost {
   --b-grund: var(--rost); --b-text: var(--licht);
@@ -146,22 +147,27 @@ button { cursor: pointer; }
   --b-mischung: soft-light; --b-deckkraft: 1;
   --b-leise: oklch(88% 0.035 60);
 }
-.bogen-moos { --b-grund: var(--moos); --b-text: var(--licht); --b-leise: oklch(84% 0.03 115); }
+.bogen-smaragd-tief {
+  --b-grund: var(--smaragd-tief); --b-text: var(--licht);
+  --b-textur: url("bilder/textur/smaragd.webp"); --b-groesse: 1600px auto;
+  --b-mischung: soft-light; --b-deckkraft: 0.55;
+  --b-leise: oklch(86% 0.03 163);
+}
 .bogen-gold {
   --b-grund: var(--champagner); --b-text: var(--tinte-text);
   --b-textur: url("bilder/textur/gold.webp"); --b-groesse: 1200px auto;
   --b-mischung: multiply; --b-deckkraft: 0.55;
   --b-leise: oklch(25% 0.04 70);
-  --b-akzent: var(--ladengruen-tief);
+  --b-akzent: var(--smaragd-akzent);
 }
-.bogen-gruen {
-  --b-grund: var(--ladengruen); --b-text: oklch(15% 0.03 124);
-  --b-textur: url("bilder/textur/rinde.webp"); --b-groesse: 1720px auto;
-  --b-mischung: multiply; --b-deckkraft: 0.22;
-  --b-leise: oklch(19% 0.04 124); --b-akzent: var(--tinte);
-  --b-linie: color-mix(in oklch, var(--tinte) 26%, transparent);
+.bogen-smaragd {
+  --b-grund: var(--smaragd); --b-text: var(--licht);
+  --b-textur: url("bilder/textur/smaragd.webp"); --b-groesse: 1600px auto;
+  --b-mischung: soft-light; --b-deckkraft: 1;
+  --b-leise: oklch(92% 0.03 163);
 }
-.bogen-gruen .knopf { --knopf-grund: var(--tinte); --knopf-text: var(--ladengruen-hell); }
+/* Eine Lampe pro Gruppe: auf dunklem Grund Jade, auf hellem Grund Smaragd */
+.bogen-rinde, .bogen-gold { --knopf-grund: var(--smaragd); --knopf-text: var(--licht); }
 
 /* Satz: ihre eigenen Sätze als Überschrift, kein Etikett darüber */
 .satz { font-size: var(--t-satz); font-weight: 330; line-height: 1.1; max-width: 22ch; letter-spacing: -0.016em; }
@@ -185,14 +191,14 @@ button { cursor: pointer; }
 .knopfreihe { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.75rem; }
 .knopf {
   display: inline-flex; align-items: center; justify-content: center; min-height: 3.1rem; padding: 0.85rem 1.6rem;
-  background: var(--knopf-grund, var(--ladengruen)); color: var(--knopf-text, var(--tinte));
+  background: var(--knopf-grund, var(--jade)); color: var(--knopf-text, var(--tinte));
   font-family: var(--text); font-size: 1.0625rem; font-weight: 500; letter-spacing: 0.005em; text-decoration: none;
   border: 0; border-radius: 1px; box-shadow: 0 0.5rem 1.2rem -0.6rem oklch(12% 0.04 264 / 0.6);
   transition: transform 0.35s var(--kurve), box-shadow 0.35s var(--kurve);
 }
 .knopf-leise {
   display: inline-flex; align-items: center; min-height: 3rem; padding: 0.4rem 0;
-  background: none; border: 0; border-bottom: 2px solid var(--b-akzent, var(--ladengruen)); border-radius: 0;
+  background: none; border: 0; border-bottom: 2px solid var(--b-akzent, var(--jade)); border-radius: 0;
   font-family: var(--text); font-size: 1.0625rem; font-weight: 450; color: inherit; text-decoration: none;
   font-variant-numeric: lining-nums;
 }
@@ -221,14 +227,14 @@ button { cursor: pointer; }
 .haupt-nav ul { display: flex; gap: clamp(0.9rem, 0.2rem + 1.2vw, 1.8rem); }
 .haupt-nav a { font-size: 0.9875rem; text-decoration: none; padding-block: 0.5rem; position: relative; }
 .haupt-nav a::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0.2rem; height: 2px; background: var(--ladengruen-hell);
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0.2rem; height: 2px; background: var(--jade);
   transform: scaleX(0); transform-origin: left; transition: transform 0.4s var(--kurve);
 }
 .haupt-nav a[aria-current="true"]::after { transform: scaleX(1); }
 @media (hover: hover) and (pointer: fine) { .haupt-nav a:hover::after { transform: scaleX(1); } }
 .leiste-tel { font-size: 0.9875rem; text-decoration: none; white-space: nowrap; font-variant-numeric: lining-nums; }
 .leiste-anfrage {
-  font-size: 0.9875rem; text-decoration: none; padding: 0.45rem 1rem; border: 1px solid var(--ladengruen-hell); color: var(--ladengruen-hell); border-radius: 1px;
+  font-size: 0.9875rem; text-decoration: none; padding: 0.45rem 1rem; border: 1px solid var(--jade); color: var(--jade); border-radius: 1px;
 }
 .nur-schmal { display: none; }
 .menue-knopf { display: none; background: none; border: 1px solid oklch(95% 0.01 95 / 0.45); border-radius: 1px; min-height: 2.6rem; padding: 0.4rem 0.95rem; color: var(--licht); }
@@ -333,13 +339,10 @@ button { cursor: pointer; }
   padding-bottom: 0.08em;
 }
 .wort-disthen { background-image: url("bilder/textur/disthen.webp"); background-size: 1100px auto; }
-.wort-gold {
-  justify-self: end;
-  background-image: url("bilder/textur/gold.webp"); background-size: 900px auto; filter: brightness(1.18);
-}
-.wort-rost { background-image: url("bilder/textur/rost.webp"); background-size: 1400px auto; background-position: 0 30%; }
+.wort-smaragd { justify-self: end; background-image: url("bilder/textur/smaragd.webp"); background-size: 1100px auto; filter: brightness(1.12); }
+.wort-gold { background-image: url("bilder/textur/gold.webp"); background-size: 900px auto; filter: brightness(1.18); }
 .dreischritt .klein:nth-of-type(1) { margin-bottom: 0.4rem; }
-.dreischritt .klein + .wort-rost { margin-top: -0.1em; }
+.dreischritt .klein + .wort-gold { margin-top: -0.1em; }
 .dreischritt .klein:nth-of-type(2) { justify-self: start; margin-block: 0.3rem 0.2rem; padding-left: 0.2em; }
 .dreischritt .rest {
   justify-self: end; max-width: 34rem; margin-top: clamp(2rem, 1rem + 3vw, 3.5rem);
@@ -445,9 +448,10 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
 .steine-text { grid-column: 2; display: grid; gap: 1.1rem; color: var(--b-leise); align-self: end; }
 .steine .galerie { grid-column: 1 / -1; columns: auto; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 0.5rem + 2vw, 2.75rem); margin-top: clamp(2.5rem, 2rem + 2vw, 4rem); }
 .steine .stueck { margin: 0; }
-.steine-detail { grid-column: 1 / -1; margin-top: clamp(2.5rem, 2rem + 2vw, 4rem); }
-.steine-detail img { width: 100%; max-width: 1600px; box-shadow: var(--schatten-fund); }
-.steine-detail .fundzettel, .eheringe .fundzettel { color: var(--b-text); }
+.steine-juwelen { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: clamp(1rem, 0.5rem + 2vw, 2.5rem); align-items: start; margin-top: clamp(2.5rem, 2rem + 2vw, 4rem); }
+.steine-juwelen img { width: 100%; box-shadow: var(--schatten-fund); }
+@media (max-width: 47.99em) { .steine-juwelen { grid-template-columns: 1fr; } }
+.steine-juwelen .fundzettel, .eheringe .fundzettel { color: var(--b-text); }
 @media (max-width: 59.99em) {
   .steine-raster { grid-template-columns: 1fr; }
   .steine-satz, .steine-text { grid-column: 1; }
@@ -508,7 +512,7 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
   border: 1px solid var(--b-linie); border-radius: 1px; background: oklch(97% 0.004 95 / 0.55);
   font-size: 1.0625rem; transition: background-color 0.25s, color 0.25s, border-color 0.25s;
 }
-.chips input:checked + span, .nadel input:checked + span { background: var(--ladengruen); color: var(--tinte); border-color: var(--ladengruen-tief); }
+.chips input:checked + span, .nadel input:checked + span { background: var(--smaragd); color: var(--licht); border-color: var(--smaragd); }
 .chips input:focus-visible + span, .nadel input:focus-visible + span { outline: 2px solid var(--tinte); outline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { .chips label:hover span, .nadel:hover span { border-color: var(--b-text); } }
 .probierstein {

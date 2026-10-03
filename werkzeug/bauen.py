@@ -32,7 +32,6 @@ GALERIEN = {
     "ohrschmuck": [
         ("brillant-ohrstecker", "Brillanten 0,26 ct", "Gold {900}", "Runde Ohrstecker aus strukturiertem Gold mit Brillant, auf Sand zwischen Muscheln"),
         ("lapis-malachit-ohrstecker", "Lapislazuli, Malachit", "Gold {900}", "Quadratische Goldohrstecker mit einem Mosaik aus Lapislazuli und Malachit"),
-        ("amethyst-ohrhaenger", "Grüner Amethyst", "Gold {750}", "Goldene Ohrhänger mit grünen Amethysten im Navetteschliff"),
         ("samenkapsel-ohrstecker", "Samenkapseln", "Silber, Gold {750}", "Silberne Ohrstecker in Form gedrehter Samenkapseln, auf einem Blatt"),
         ("quarz-ohrhaenger", "Einschlussquarze", "Silber, Gold {750}", "Rechteckige Ohrhänger mit Einschlussquarzen, an einem Zweig hängend"),
         ("bernstein-ohrstecker", "Roter Bernstein, behandelt", "Silber {925}", "Mattsilberne Ohrstecker in Schalenform mit rotem Bernstein, auf Treibholz"),
