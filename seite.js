@@ -6,25 +6,22 @@
   const ruhig = matchMedia('(prefers-reduced-motion: reduce)');
   const feinZeiger = matchMedia('(hover: hover) and (pointer: fine)');
 
-  /* ───── Auftritt: erst wenn die Seite steht ───── */
-  // Nach dem letzten Zug fällt die Maske weg — die Unterschrift steht dann vollständig.
-  // (animationend feuert in Masken nicht verlässlich, daher die Dauer aus den Zügen.)
-  const zuege = $$('.schreibzuege path');
-  const maskeWeg = () => $('.unterschrift-gross use')?.removeAttribute('mask');
+  /* ───── Die Unterschrift schreibt sich: im Auftakt nach dem Laden, im Gruß beim Hinsehen ───── */
+  const auftaktFeder = $('.feder-auftakt');
   let begonnen = false;
-  const auftritt = () => {
-    if (begonnen) return; begonnen = true;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      document.body.classList.add('geladen');
-      const l = zuege[zuege.length - 1];
-      if (!l) return;
-      if (ruhig.matches) return maskeWeg();
-      const s = (v) => parseFloat(l.style.getPropertyValue(v)) || 0;
-      setTimeout(maskeWeg, (s('--v') + s('--t') + 0.55 + 0.2) * 1000);
-    }));
+  const schreiben = () => {
+    if (begonnen || !auftaktFeder) return; begonnen = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => auftaktFeder.classList.add('schreibt')));
   };
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(auftritt);
-  setTimeout(auftritt, 1200);
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(schreiben, 350));
+  setTimeout(schreiben, 1600);
+  const grussFeder = $('.feder-gruss');
+  if (grussFeder && 'IntersectionObserver' in window) {
+    const b = new IntersectionObserver((e) => {
+      if (e.some((x) => x.isIntersecting)) { grussFeder.classList.add('schreibt'); b.disconnect(); }
+    }, { threshold: 0.6 });
+    b.observe(grussFeder);
+  } else grussFeder?.classList.add('schreibt');
 
   /* ───── Leiste weicht beim Runterscrollen aus ───── */
   const leiste = $('.leiste');
@@ -70,21 +67,6 @@
   }, { rootMargin: '-30% 0px -60% 0px' });
   abschnitte.forEach((a) => kapitelBeob.observe(a));
 
-  /* ───── Auftreten beim Scrollen, Geschwister leicht versetzt ───── */
-  const zeigen = $$('.zeigen');
-  if ('IntersectionObserver' in window && !ruhig.matches) {
-    const beob = new IntersectionObserver((eintraege) => {
-      let n = 0;
-      for (const e of eintraege) {
-        if (!e.isIntersecting) continue;
-        e.target.style.setProperty('--folge', `${Math.min(n++, 4) * 90}ms`);
-        e.target.classList.add('da');
-        beob.unobserve(e.target);
-      }
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    zeigen.forEach((el) => beob.observe(el));
-  } else zeigen.forEach((el) => el.classList.add('da'));
-
   /* ───── Reiter ───── */
   const reiter = $('.reiter');
   if (reiter) {
@@ -99,8 +81,6 @@
         tafeln[j].hidden = !an;
       });
       tafeln[i].classList.remove('blendet'); void tafeln[i].offsetWidth; tafeln[i].classList.add('blendet');
-      // Bilder in der neuen Tafel sofort zeigen
-      $$('.zeigen', tafeln[i]).forEach((el) => el.classList.add('da'));
       if (fokus) { tabs[i].focus(); tabs[i].scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
     };
     tabs.forEach((t, i) => {
@@ -127,7 +107,7 @@
     aBild.removeAttribute('srcset');
     aBild.src = k.dataset.gross;
     aBild.alt = img.alt;
-    const et = k.closest('li, figure')?.querySelector('.etikett');
+    const et = k.closest('li, figure')?.querySelector('.etikett, .fundzettel');
     aEtikett.innerHTML = et ? et.innerHTML : '';
     $('.lupe-hinweis', aEtikett)?.remove();
   };
@@ -399,7 +379,7 @@
     const pos = (e) => { const r = stein.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; };
     stein.addEventListener('pointerdown', (e) => {
       if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
-      if (!letzteNadel) { $('.probierstein-stand').textContent = 'Wählen Sie zuerst eine Probiernadel.'; return; }
+      if (!letzteNadel) { $('.probierstein-stand').textContent = 'Bitte wählen Sie zuerst ein Metall.'; return; }
       zug = { metall: letzteNadel, linie: [pos(e)], fasern: fasern(zufall(Date.now() % 100000 + 1)), alpha: 1, fortschritt: 1, frei: true };
       streiche.push(zug);
       stein.setPointerCapture(e.pointerId);
@@ -417,7 +397,7 @@
   function steinStand() {
     const gewaehlt = nadeln.filter((n) => n.checked).map((n) => NAME(n.value));
     const el = $('.probierstein-stand');
-    el.textContent = gewaehlt.length ? `Auf dem Stein: ${liste(gewaehlt)}.` : '';
+    el.textContent = gewaehlt.length ? `Gewählt: ${liste(gewaehlt)}` : '';
   }
 
   /* ───── Anfrage: Auswahl → Nachricht ───── */
@@ -439,12 +419,12 @@
     if (stein === 'ohne') satz += ', ohne Stein';
     satz += '.';
     return [
-      'Guten Tag Frau Kusche,', '',
+      'Sehr geehrte Frau Kusche,', '',
       satz,
-      stein === 'eigener' ? 'Einen eigenen Stein bringe ich mit.' : null,
-      anlass ? `Anlass / Wunschtermin: ${anlass}` : null,
-      was === 'Eheringe' ? 'Wann dürfen wir zu zweit zur Beratung vorbeikommen?' : 'Wann darf ich zur Beratung vorbeikommen?', '',
-      'Viele Grüße',
+      stein === 'eigener' ? 'Einen eigenen Stein würde ich gern mitbringen.' : null,
+      anlass ? `Anlass oder Termin: ${anlass}` : null,
+      was === 'Eheringe' ? 'Gern würden wir gemeinsam einen Termin zur Beratung vereinbaren.' : 'Gern würde ich einen Termin zur Beratung vereinbaren.', '',
+      'Mit freundlichen Grüßen',
       name || null,
     ];
   };
@@ -492,7 +472,7 @@
     $('.brief-kopieren', form).addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(feld.value); }
       catch { feld.select(); document.execCommand('copy'); }
-      stand.textContent = 'Der Text ist kopiert.';
+      stand.textContent = 'Der Text ist in der Zwischenablage.';
       setTimeout(() => { stand.textContent = ''; }, 3500);
     });
   }

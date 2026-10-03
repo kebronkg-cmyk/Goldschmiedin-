@@ -253,22 +253,14 @@
    1573
   ]
  },
- "steine-opale": {
-  "b": 1067,
-  "h": 800,
+ "disthen-detail": {
+  "b": 1600,
+  "h": 600,
   "breiten": [
    480,
    800,
-   1067
-  ]
- },
- "steine-farben": {
-  "b": 1067,
-  "h": 800,
-  "breiten": [
-   480,
-   800,
-   1067
+   1200,
+   1600
   ]
  },
  "krokodilring-ast": {

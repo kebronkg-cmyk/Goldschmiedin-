@@ -97,5 +97,134 @@ def main():
     print("Unterschrift", len(daten["unterschrift"]["d"]), "Zeichen,", len(daten["unterschrift"]["zuege"]), "Züge;",
           "Miku", len(daten["miku"]["d"]), "Zeichen")
 
+
+
+# ───── Federlinie: die Unterschrift als glatter, feiner Strich (für große Größen) ─────
+
+def federlinie(b, glatt=2.2):
+    """Mittellinie als zusammenhängende Züge; an Knoten geht es in die geradeste Richtung weiter."""
+    from scipy.ndimage import gaussian_filter1d
+    pts = set(zip(*np.nonzero(skeletonize(b))))
+    N = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+    nb = lambda p: [(p[0] + a, p[1] + c) for a, c in N if (p[0] + a, p[1] + c) in pts]
+    knoten = {p for p in pts if len(nb(p)) != 2}
+    # Kanten zwischen Knoten (oder geschlossene Schleifen)
+    benutzt, kanten = set(), []
+    ek = lambda a, b: (a, b) if a < b else (b, a)
+    def gehe(start, erst):
+        weg, vor, jetzt = [start, erst], start, erst
+        benutzt.add(ek(start, erst))
+        while jetzt not in knoten:
+            nx = [r for r in nb(jetzt) if r != vor and ek(jetzt, r) not in benutzt]
+            if not nx:
+                break
+            benutzt.add(ek(jetzt, nx[0])); vor, jetzt = jetzt, nx[0]; weg.append(jetzt)
+        return weg
+    for n in sorted(knoten):
+        for q in nb(n):
+            if ek(n, q) not in benutzt:
+                kanten.append(gehe(n, q))
+    for p in sorted(pts):
+        for q in nb(p):
+            if ek(p, q) not in benutzt:
+                kanten.append(gehe(p, q))
+    kanten = [k for k in kanten if len(k) >= 5]
+    # Knoten zusammenfassen (Skelett-Knoten liegen oft als kleine Haufen)
+    def schluessel(p):
+        return (p[0] // 5, p[1] // 5)
+    frei = list(range(len(kanten)))
+    def richtung(k, am_ende):
+        a = np.array(k[-1] if am_ende else k[0], float)
+        b_ = np.array(k[-6] if am_ende else k[5], float) if len(k) > 6 else np.array(k[0] if am_ende else k[-1], float)
+        v = a - b_
+        return v / (np.linalg.norm(v) or 1)
+    zuege = []
+    while frei:
+        # links beginnen: Kante mit dem kleinsten x-Wert
+        i = min(frei, key=lambda j: min(p[1] for p in kanten[j]))
+        frei.remove(i)
+        k = kanten[i]
+        if k[0][1] > k[-1][1]:
+            k = k[::-1]
+        zug = list(k)
+        while True:
+            ende = zug[-1]; v = richtung(zug, True)
+            beste, bwert, bk = None, -0.2, None
+            for j in frei:
+                kj = kanten[j]
+                for umkehr in (False, True):
+                    kk = kj[::-1] if umkehr else kj
+                    if np.hypot(kk[0][0] - ende[0], kk[0][1] - ende[1]) > 7:
+                        continue
+                    w = float(np.dot(v, -richtung(kk, False)))
+                    if w > bwert:
+                        beste, bwert, bk = j, w, kk
+            if beste is None:
+                break
+            frei.remove(beste); zug += bk[1:]
+        zuege.append(zug)
+    aus = []
+    for z in zuege:
+        P = np.array([(x / F, y / F) for y, x in z], float)
+        if len(P) < 4:
+            continue
+        # gleichmäßig neu abtasten, dann glätten (Enden bleiben fest)
+        d = np.r_[0, np.cumsum(np.hypot(*np.diff(P, axis=0).T))]
+        if d[-1] < 1.2:
+            continue
+        s = np.linspace(0, d[-1], max(6, int(d[-1] / 0.5)))
+        Q = np.c_[np.interp(s, d, P[:, 0]), np.interp(s, d, P[:, 1])]
+        G = np.c_[gaussian_filter1d(Q[:, 0], glatt, mode="nearest"), gaussian_filter1d(Q[:, 1], glatt, mode="nearest")]
+        G[0], G[-1] = Q[0], Q[-1]
+        G = np.array(rdp([tuple(p) for p in G], 0.06))
+        # Catmull-Rom → kubische Bézier
+        teile = [f"M{G[0][0]:.2f} {G[0][1]:.2f}"]
+        for k in range(len(G) - 1):
+            p0 = G[max(k - 1, 0)]; p1 = G[k]; p2 = G[k + 1]; p3 = G[min(k + 2, len(G) - 1)]
+            c1 = p1 + (p2 - p0) / 6; c2 = p2 - (p3 - p1) / 6
+            teile.append(f"C{c1[0]:.2f} {c1[1]:.2f} {c2[0]:.2f} {c2[1]:.2f} {p2[0]:.2f} {p2[1]:.2f}")
+        aus.append({"d": "".join(teile), "l": round(float(d[-1]), 1), "x": round(float(G[:, 0].min()), 1)})
+    aus.sort(key=lambda z: z["x"])
+    return aus
+
+
+def schriftzug(schriftdatei, text="Michaela Kusche", groesse=420):
+    """Ihr Name in einer ruhigen Schreibschrift (Corinthia, OFL): Umriss zum Füllen und
+    Mittellinie zum Schreiben. Beide im selben Koordinatenraum (Raster / F)."""
+    from PIL import ImageDraw, ImageFont
+    from scipy.ndimage import distance_transform_edt
+    schrift = ImageFont.truetype(str(schriftdatei), groesse)
+    l, o, r, u = schrift.getbbox(text)
+    rand = groesse // 6
+    bild = Image.new("L", (r - l + 2 * rand, u - o + 2 * rand), 0)
+    ImageDraw.Draw(bild).text((rand - l, rand - o), text, font=schrift, fill=255)
+    b = np.asarray(bild.filter(ImageFilter.GaussianBlur(1.2))) / 255 > 0.5
+    dicke = float(distance_transform_edt(b).max()) * 2 / F    # stärkster Schattenstrich, in viewBox-Einheiten
+    h, w = b.shape
+    feder = federlinie(b, glatt=1.6)
+    # Kleine, freie Teile (i-Punkt) haben keine Mittellinie: als kurzen Tupfer ergänzen,
+    # gesetzt wie von Hand — erst nachdem das Wort geschrieben ist (also ans Ende)
+    from scipy.ndimage import label, center_of_mass
+    teile, n = label(b)
+    for k in range(1, n + 1):
+        if (teile == k).sum() < (groesse / 9) ** 2:
+            y, x = center_of_mass(teile == k)
+            x, y = x / F, y / F
+            feder.append({"d": f"M{x - 0.3:.2f} {y:.2f}L{x + 0.3:.2f} {y:.2f}", "l": 0.6, "x": 9999})
+    return {"viewBox": f"0 0 {w / F:.1f} {h / F:.1f}", "d": kontur(b), "feder": feder,
+            "maskenbreite": round(dicke * 1.6 + 0.6, 2)}
+
+
+def feder_main():
+    sig = maske(tinte("media__michaela-kusche-unterschrift.png", False), 0.42)
+    daten = json.loads(ZIEL.read_text())
+    daten["unterschrift"]["feder"] = federlinie(sig)
+    daten["schriftzug"] = schriftzug(pathlib.Path(__file__).resolve().parent / "Corinthia-Regular.ttf")
+    ZIEL.write_text(json.dumps(daten))
+    print("Federlinie:", len(daten["unterschrift"]["feder"]), "Züge;", "Schriftzug:", len(daten["schriftzug"]["feder"]),
+          "Züge, viewBox", daten["schriftzug"]["viewBox"], "Maskenbreite", daten["schriftzug"]["maskenbreite"])
+
+
 if __name__ == "__main__":
     main()
+    feder_main()
