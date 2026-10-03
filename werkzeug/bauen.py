@@ -56,10 +56,6 @@ GALERIEN = {
         ("chip-brosche", "Computerelement", "Silber, teilweise Goldauflage", "Brosche aus Silber mit Goldauflage und einem Computerbauteil"),
         ("chrysokoll-brosche", "Chrysokoll, Goldstaub", "Palladium {500}", "Blattförmige Brosche mit Chrysokoll und Goldstaub, auf blauer Seide"),
     ],
-    "steine": [
-        ("steine-opale", "Einschlussquarze, Boulderopale, Uwarowit, vulkanische Koralle", "", "Lose Edelsteine aus der Sammlung, in Rotbraun, schillerndem Blau, Grün und Korallenrot, auf hellem Grund"),
-        ("steine-farben", "Sugilith, Bergkristall, Paraibaturmalin, Heterosit, Jaspis", "", "Lose Edelsteine aus der Sammlung, in Violett, Flieder, Türkis, Klar und gestreiftem Orange, auf hellem Grund"),
-    ],
 }
 
 
@@ -113,26 +109,29 @@ def schreibt():
 
 
 def feder(name):
-    """Die Unterschrift als feiner Federstrich (Mittellinie), Zug für Zug geschrieben.
+    """Ihr Name in ruhiger Schreibschrift (Corinthia), Zug für Zug geschrieben.
 
-    Tempo aus der gemessenen Länge: gleichmäßige Federgeschwindigkeit, kleine Pause,
-    wo die Feder absetzt. Die Zeiten stehen als --v (Beginn) und --t (Dauer) am Pfad;
-    wann geschrieben wird, entscheidet das CSS (Klasse .schreibt am SVG).
+    Sichtbar ist der echte Umriss der Schrift mit Haar- und Schattenstrichen; freigelegt
+    wird er durch eine Maske aus der Mittellinie (Klasse .zug, mit --v Beginn und --t Dauer).
+    Tempo aus der gemessenen Länge, kleine Pause, wo die Feder absetzt. Wann geschrieben
+    wird, entscheidet das CSS (Klasse .schreibt). Der Probierstein liest dieselben Züge.
     """
-    u = ZEICHEN["unterschrift"]
-    tempo = 215.0  # Einheiten der viewBox pro Sekunde (≈ 4 s für die ganze Unterschrift)
+    z = ZEICHEN["schriftzug"]
+    tempo = 330.0  # Einheiten der viewBox pro Sekunde (≈ 4,5 s für den ganzen Namen)
     t, pfade, letzt_x = 0.0, [], None
-    for z in u["feder"]:
-        if letzt_x is not None and z["x"] - letzt_x > 9:
+    for zug in z["feder"]:
+        if letzt_x is not None and zug["x"] - letzt_x > 9:
             t += 0.22  # Feder setzt ab
-        d = max(0.05, z["l"] / tempo)
-        pfade.append(f'<path pathLength="1" style="--v:{t:.2f}s;--t:{d:.2f}s" d="{z["d"]}"/>')
+        d = max(0.12, zug["l"] / tempo)
+        pfade.append(f'<path class="zug" pathLength="1" style="--v:{t:.2f}s;--t:{d:.2f}s" d="{zug["d"]}"/>')
         t += d * 0.92
-        letzt_x = z["x"] + 4
-    return (f'<svg class="feder feder-{name}" viewBox="-2 -2 304 45" role="img" aria-label="Michaela Kusche" '
-            f'data-dauer="{t:.2f}"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'
-            + "".join(pfade) + "</g></svg>")
-
+        letzt_x = min(zug["x"], 9000) + 4
+    mid = f"zugmaske-{name}"
+    return (f'<svg class="feder feder-{name}" viewBox="{z["viewBox"]}" role="img" aria-label="Michaela Kusche" data-dauer="{t:.2f}">'
+            f'<defs><mask id="{mid}" maskUnits="userSpaceOnUse">'
+            f'<g fill="none" stroke="#fff" stroke-width="{z["maskenbreite"]}" stroke-linecap="round" stroke-linejoin="round">'
+            + "".join(pfade) +
+            f'</g></mask></defs><path class="umriss" d="{z["d"]}" mask="url(#{mid})"/></svg>')
 
 def zwischen(s, marke, inhalt):
     muster = re.compile(rf"(<!-- {re.escape(marke)} -->).*?(<!-- /{re.escape(marke)} -->)", re.S)

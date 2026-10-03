@@ -379,7 +379,7 @@
     const pos = (e) => { const r = stein.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; };
     stein.addEventListener('pointerdown', (e) => {
       if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
-      if (!letzteNadel) { $('.probierstein-stand').textContent = 'Wählen Sie zuerst eine Probiernadel.'; return; }
+      if (!letzteNadel) { $('.probierstein-stand').textContent = 'Bitte wählen Sie zuerst ein Metall.'; return; }
       zug = { metall: letzteNadel, linie: [pos(e)], fasern: fasern(zufall(Date.now() % 100000 + 1)), alpha: 1, fortschritt: 1, frei: true };
       streiche.push(zug);
       stein.setPointerCapture(e.pointerId);
@@ -397,7 +397,7 @@
   function steinStand() {
     const gewaehlt = nadeln.filter((n) => n.checked).map((n) => NAME(n.value));
     const el = $('.probierstein-stand');
-    el.textContent = gewaehlt.length ? `Auf dem Stein: ${liste(gewaehlt)}.` : '';
+    el.textContent = gewaehlt.length ? `Gewählt: ${liste(gewaehlt)}` : '';
   }
 
   /* ───── Anfrage: Auswahl → Nachricht ───── */
@@ -419,12 +419,12 @@
     if (stein === 'ohne') satz += ', ohne Stein';
     satz += '.';
     return [
-      'Guten Tag Frau Kusche,', '',
+      'Sehr geehrte Frau Kusche,', '',
       satz,
-      stein === 'eigener' ? 'Einen eigenen Stein bringe ich mit.' : null,
-      anlass ? `Anlass / Wunschtermin: ${anlass}` : null,
-      was === 'Eheringe' ? 'Wann dürfen wir zu zweit zur Beratung vorbeikommen?' : 'Wann darf ich zur Beratung vorbeikommen?', '',
-      'Viele Grüße',
+      stein === 'eigener' ? 'Einen eigenen Stein würde ich gern mitbringen.' : null,
+      anlass ? `Anlass oder Termin: ${anlass}` : null,
+      was === 'Eheringe' ? 'Gern würden wir gemeinsam einen Termin zur Beratung vereinbaren.' : 'Gern würde ich einen Termin zur Beratung vereinbaren.', '',
+      'Mit freundlichen Grüßen',
       name || null,
     ];
   };
@@ -472,7 +472,7 @@
     $('.brief-kopieren', form).addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(feld.value); }
       catch { feld.select(); document.execCommand('copy'); }
-      stand.textContent = 'Der Text ist kopiert.';
+      stand.textContent = 'Der Text ist in der Zwischenablage.';
       setTimeout(() => { stand.textContent = ''; }, 3500);
     });
   }

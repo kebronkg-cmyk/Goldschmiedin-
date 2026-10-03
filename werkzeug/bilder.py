@@ -50,9 +50,8 @@ BILDER = {
     "turmalin-brosche": ("media__Broschen__b1.JPG", None),
     "chrysokoll-brosche": ("media__Broschen__b6.jpg", None),
     "chip-brosche": ("media__Broschen__b3.jpg", None),
-    # Edelsteine
-    "steine-opale": ("media__Edelsteine__goldschmiedin_michaela_kusche_edelsteine3.jpg", None),
-    "steine-farben": ("media__Edelsteine__goldschmiedin_michaela_kusche_edelsteine2.jpg", None),
+    # Edelsteine: Detail des Disthens in der Brosche (volle Auflösung, keine Vergrößerung)
+    "disthen-detail": ("media__Broschen__b2.jpg", (1250, 860, 2850, 1460)),
     # Inspiration — Krokodil auf das Format der Hand-Aufnahme (862 × 800) gebracht,
     # nur Flechte und Grund am Rand fallen weg
     "krokodilring-ast": ("media__topics-pictures__zoom__michaela_kusche_schmuck_krokoring_3.jpg", (100, 0, 1630, 1420)),

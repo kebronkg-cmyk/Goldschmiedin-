@@ -188,12 +188,41 @@ def federlinie(b, glatt=2.2):
     return aus
 
 
+def schriftzug(schriftdatei, text="Michaela Kusche", groesse=420):
+    """Ihr Name in einer ruhigen Schreibschrift (Corinthia, OFL): Umriss zum Füllen und
+    Mittellinie zum Schreiben. Beide im selben Koordinatenraum (Raster / F)."""
+    from PIL import ImageDraw, ImageFont
+    from scipy.ndimage import distance_transform_edt
+    schrift = ImageFont.truetype(str(schriftdatei), groesse)
+    l, o, r, u = schrift.getbbox(text)
+    rand = groesse // 6
+    bild = Image.new("L", (r - l + 2 * rand, u - o + 2 * rand), 0)
+    ImageDraw.Draw(bild).text((rand - l, rand - o), text, font=schrift, fill=255)
+    b = np.asarray(bild.filter(ImageFilter.GaussianBlur(1.2))) / 255 > 0.5
+    dicke = float(distance_transform_edt(b).max()) * 2 / F    # stärkster Schattenstrich, in viewBox-Einheiten
+    h, w = b.shape
+    feder = federlinie(b, glatt=1.6)
+    # Kleine, freie Teile (i-Punkt) haben keine Mittellinie: als kurzen Tupfer ergänzen,
+    # gesetzt wie von Hand — erst nachdem das Wort geschrieben ist (also ans Ende)
+    from scipy.ndimage import label, center_of_mass
+    teile, n = label(b)
+    for k in range(1, n + 1):
+        if (teile == k).sum() < (groesse / 9) ** 2:
+            y, x = center_of_mass(teile == k)
+            x, y = x / F, y / F
+            feder.append({"d": f"M{x - 0.3:.2f} {y:.2f}L{x + 0.3:.2f} {y:.2f}", "l": 0.6, "x": 9999})
+    return {"viewBox": f"0 0 {w / F:.1f} {h / F:.1f}", "d": kontur(b), "feder": feder,
+            "maskenbreite": round(dicke * 1.6 + 0.6, 2)}
+
+
 def feder_main():
     sig = maske(tinte("media__michaela-kusche-unterschrift.png", False), 0.42)
     daten = json.loads(ZIEL.read_text())
     daten["unterschrift"]["feder"] = federlinie(sig)
+    daten["schriftzug"] = schriftzug(pathlib.Path(__file__).resolve().parent / "Corinthia-Regular.ttf")
     ZIEL.write_text(json.dumps(daten))
-    print("Federlinie:", len(daten["unterschrift"]["feder"]), "Züge")
+    print("Federlinie:", len(daten["unterschrift"]["feder"]), "Züge;", "Schriftzug:", len(daten["schriftzug"]["feder"]),
+          "Züge, viewBox", daten["schriftzug"]["viewBox"], "Maskenbreite", daten["schriftzug"]["maskenbreite"])
 
 
 if __name__ == "__main__":

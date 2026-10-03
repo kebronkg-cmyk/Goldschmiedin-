@@ -9,8 +9,9 @@ PR-Texten oder Code. Auf der Seite selbst kein Hinweis auf KI oder Werkzeuge.
 Es wird **nie direkt auf `main` committet oder gepusht.** Jede Arbeit läuft so:
 
 1. Arbeit auf einem Zweig `arbeit/<name>`, Pull Request als Entwurf gegen `main`.
-2. Vorschau ohne Veröffentlichung: `https://raw.githack.com/kebronkg-cmyk/Goldschmiedin-/<commit>/index.html`
-   (immer mit der Commit-Kennung, nicht mit dem Zweignamen — dann zeigt der Link genau diesen Stand).
+2. Vorschau ohne Veröffentlichung: Jeder Zweig `arbeit/version-<n>-<name>` erscheint nach dem Push
+   unter `https://kebronkg-cmyk.github.io/Goldschmiedin-/vorschau/<name>/` (noindex). Diesen Link
+   bekommt die Inhaberin. Nach dem Push abfragen, bis die Änderung wirklich da ist.
 3. Schreibt der Auftraggeber **„neue Version“** (ggf. mit Namen der Variante):
    - Der aktuelle Stand von `main` ist bereits als Zweig `version-<n>` gesichert (sonst jetzt sichern).
    - Pull Request auf „bereit“ setzen und mergen (Merge-Commit, kein Squash).
@@ -18,7 +19,8 @@ Es wird **nie direkt auf `main` committet oder gepusht.** Jede Arbeit läuft so:
    - Live-URL abfragen, bis die Änderung wirklich da ist.
 4. Schreibt der Auftraggeber **„back“**: die vorige Version wiederherstellen, ohne Geschichte zu löschen.
    - Zweig `arbeit/back-zu-version-<n>` von `main`, darin den Dateibaum von `version-<n>` herstellen:
-     `git rm -rq . && git checkout version-<n> -- . && git commit -m "Zurück zu Version <n>"`
+     `git rm -rq -- . ':!.github' && git checkout version-<n> -- . ':!.github' && git commit -m "Zurück zu Version <n>"`
+     (der Veröffentlichungs-Ablauf in `.github/` bleibt auf dem neuesten Stand)
    - Pull Request, mergen, Live-URL prüfen. Kein Force-Push, kein Löschen von Zweigen.
 
 Tags lassen sich über den Zugang dieser Umgebung nicht pushen; Versionen sind deshalb Zweige.

@@ -33,6 +33,10 @@
   --moos: oklch(27.6% 0.031 121);        /* Grund hinter dem Krokodilring */
   --champagner: oklch(82% 0.05 82);      /* gebürstetes, mattiertes Gold, aufgehellt */
   --mattgold: oklch(80% 0.1 82);         /* Unterschrift und Ornament, nie Fließtext */
+  /* Ladengrün: der Wandsockel im Laden (Foto gemessen 60 % 0.09 122, Belichtung ausgeglichen) */
+  --ladengruen: oklch(66% 0.12 124);
+  --ladengruen-hell: oklch(82% 0.13 124);  /* Akzent auf dunklem Grund */
+  --ladengruen-tief: oklch(40% 0.085 124); /* Akzent auf hellem Grund */
   --stein: oklch(17.5% 0.006 250);       /* Probierstein */
 
   /* Text auf hellem und dunklem Grund */
@@ -85,7 +89,7 @@ body {
   font-optical-sizing: auto; font-kerning: normal; -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
-::selection { background: var(--mattgold); color: var(--tinte); }
+::selection { background: var(--ladengruen-hell); color: var(--tinte); }
 img { display: block; max-width: 100%; height: auto; }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.24em; }
 :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
@@ -114,6 +118,7 @@ button { cursor: pointer; }
   padding-top: var(--abschnitt); padding-bottom: var(--abschnitt); padding-left: var(--rand); padding-right: var(--rand);
   --b-leise: color-mix(in oklch, var(--b-text) 76%, var(--b-grund));
   --b-linie: color-mix(in oklch, var(--b-text) 22%, transparent);
+  --b-akzent: var(--ladengruen-hell);
 }
 .bogen::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
@@ -126,7 +131,6 @@ button { cursor: pointer; }
   --b-textur: url("bilder/textur/disthen.webp"); --b-groesse: 1600px auto;
   --b-mischung: soft-light; --b-deckkraft: 1;
   --b-leise: oklch(93% 0.022 258);
-  --knopf-grund: var(--licht); --knopf-text: var(--tinte);
 }
 .bogen-tinte { --b-grund: var(--tinte); --b-text: var(--licht); --b-leise: oklch(80% 0.03 258); }
 .bogen-rinde {
@@ -134,7 +138,7 @@ button { cursor: pointer; }
   --b-textur: url("bilder/textur/rinde.webp"); --b-groesse: 1720px auto;
   --b-mischung: multiply; --b-deckkraft: 0.28;
   --b-leise: oklch(38% 0.035 262);
-  --knopf-grund: var(--tinte); --knopf-text: var(--licht);
+  --b-akzent: var(--ladengruen-tief);
 }
 .bogen-rost {
   --b-grund: var(--rost); --b-text: var(--licht);
@@ -148,7 +152,16 @@ button { cursor: pointer; }
   --b-textur: url("bilder/textur/gold.webp"); --b-groesse: 1200px auto;
   --b-mischung: multiply; --b-deckkraft: 0.55;
   --b-leise: oklch(25% 0.04 70);
+  --b-akzent: var(--ladengruen-tief);
 }
+.bogen-gruen {
+  --b-grund: var(--ladengruen); --b-text: oklch(15% 0.03 124);
+  --b-textur: url("bilder/textur/rinde.webp"); --b-groesse: 1720px auto;
+  --b-mischung: multiply; --b-deckkraft: 0.22;
+  --b-leise: oklch(19% 0.04 124); --b-akzent: var(--tinte);
+  --b-linie: color-mix(in oklch, var(--tinte) 26%, transparent);
+}
+.bogen-gruen .knopf { --knopf-grund: var(--tinte); --knopf-text: var(--ladengruen-hell); }
 
 /* Satz: ihre eigenen Sätze als Überschrift, kein Etikett darüber */
 .satz { font-size: var(--t-satz); font-weight: 330; line-height: 1.1; max-width: 22ch; letter-spacing: -0.016em; }
@@ -172,14 +185,14 @@ button { cursor: pointer; }
 .knopfreihe { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.75rem; }
 .knopf {
   display: inline-flex; align-items: center; justify-content: center; min-height: 3.1rem; padding: 0.85rem 1.6rem;
-  background: var(--knopf-grund, var(--tinte)); color: var(--knopf-text, var(--licht));
+  background: var(--knopf-grund, var(--ladengruen)); color: var(--knopf-text, var(--tinte));
   font-family: var(--text); font-size: 1.0625rem; font-weight: 500; letter-spacing: 0.005em; text-decoration: none;
   border: 0; border-radius: 1px; box-shadow: 0 0.5rem 1.2rem -0.6rem oklch(12% 0.04 264 / 0.6);
   transition: transform 0.35s var(--kurve), box-shadow 0.35s var(--kurve);
 }
 .knopf-leise {
   display: inline-flex; align-items: center; min-height: 3rem; padding: 0.4rem 0;
-  background: none; border: 0; border-bottom: 1px solid var(--mattgold); border-radius: 0;
+  background: none; border: 0; border-bottom: 2px solid var(--b-akzent, var(--ladengruen)); border-radius: 0;
   font-family: var(--text); font-size: 1.0625rem; font-weight: 450; color: inherit; text-decoration: none;
   font-variant-numeric: lining-nums;
 }
@@ -208,14 +221,14 @@ button { cursor: pointer; }
 .haupt-nav ul { display: flex; gap: clamp(0.9rem, 0.2rem + 1.2vw, 1.8rem); }
 .haupt-nav a { font-size: 0.9875rem; text-decoration: none; padding-block: 0.5rem; position: relative; }
 .haupt-nav a::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0.2rem; height: 1px; background: var(--mattgold);
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0.2rem; height: 2px; background: var(--ladengruen-hell);
   transform: scaleX(0); transform-origin: left; transition: transform 0.4s var(--kurve);
 }
 .haupt-nav a[aria-current="true"]::after { transform: scaleX(1); }
 @media (hover: hover) and (pointer: fine) { .haupt-nav a:hover::after { transform: scaleX(1); } }
 .leiste-tel { font-size: 0.9875rem; text-decoration: none; white-space: nowrap; font-variant-numeric: lining-nums; }
 .leiste-anfrage {
-  font-size: 0.9875rem; text-decoration: none; padding: 0.45rem 1rem; border: 1px solid oklch(95% 0.01 95 / 0.45); border-radius: 1px;
+  font-size: 0.9875rem; text-decoration: none; padding: 0.45rem 1rem; border: 1px solid var(--ladengruen-hell); color: var(--ladengruen-hell); border-radius: 1px;
 }
 .nur-schmal { display: none; }
 .menue-knopf { display: none; background: none; border: 1px solid oklch(95% 0.01 95 / 0.45); border-radius: 1px; min-height: 2.6rem; padding: 0.4rem 0.95rem; color: var(--licht); }
@@ -285,12 +298,12 @@ button { cursor: pointer; }
   margin-top: clamp(0.5rem, 1.5vw, 1.5rem);
 }
 .feder { display: block; width: 100%; height: auto; overflow: visible; }
-.feder g { stroke-width: var(--feder-breite, 0.62); }
-.js .feder path { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
-.js .feder.schreibt path { animation: schreiben var(--t) cubic-bezier(0.45, 0.05, 0.4, 1) var(--v) forwards; }
+.feder .umriss { fill: currentColor; }
+.js .feder .zug { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.js .feder.schreibt .zug { animation: schreiben var(--t) cubic-bezier(0.45, 0.05, 0.4, 1) var(--v) forwards; }
 @keyframes schreiben { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .js .feder path, .js .feder.schreibt path { animation: none; stroke-dashoffset: 0; }
+  .js .feder .zug, .js .feder.schreibt .zug { animation: none; stroke-dashoffset: 0; }
 }
 
 @media (max-width: 59.99em) {
@@ -303,7 +316,7 @@ button { cursor: pointer; }
   /* Am Handy: Bild, Satz, gleich darunter die Unterschrift, dann Text und Knopf */
   .auftakt-text { display: contents; }
   .auftakt h1 { grid-column: 2; grid-row: 2; }
-  .auftakt-feder { grid-column: 2; grid-row: 3; width: 100%; margin: 1.1rem 0 1.4rem -0.3rem; --feder-breite: 0.95; }
+  .auftakt-feder { grid-column: 2; grid-row: 3; width: 100%; margin: 1.1rem 0 1.4rem -0.3rem; }
   .auftakt-lead { grid-column: 2; grid-row: 4; margin-bottom: 1.4rem; }
   .auftakt .knopfreihe { grid-column: 2; grid-row: 5; }
 }
@@ -348,7 +361,7 @@ button { cursor: pointer; }
   font-size: var(--t-mittel); font-weight: 340; color: var(--b-leise);
   border-bottom: 2px solid transparent; transition: color 0.3s, border-color 0.3s;
 }
-.reiter [role="tab"][aria-selected="true"] { color: var(--b-text); border-bottom-color: var(--b-text); }
+.reiter [role="tab"][aria-selected="true"] { color: var(--b-text); border-bottom-color: var(--b-akzent); }
 @media (hover: hover) and (pointer: fine) { .reiter [role="tab"]:hover { color: var(--b-text); } }
 .tafel + .tafel { margin-top: var(--abschnitt); }
 .js .reiter:not([hidden]) ~ .tafel + .tafel { margin-top: 0; }
@@ -392,9 +405,9 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
   background: none; color: var(--b-text); border: 1px solid var(--b-linie); border-radius: 1px; font-size: 1.0625rem;
 }
 .wechsel-knopf::before {
-  content: ""; width: 0.6rem; height: 0.6rem; border-radius: 50%; border: 1px solid var(--mattgold); transition: background-color 0.3s;
+  content: ""; width: 0.6rem; height: 0.6rem; border-radius: 50%; border: 1px solid var(--b-akzent); transition: background-color 0.3s;
 }
-.wechsel-knopf[aria-pressed="true"]::before { background: var(--mattgold); }
+.wechsel-knopf[aria-pressed="true"]::before { background: var(--b-akzent); }
 @media (hover: hover) and (pointer: fine) { .wechsel-knopf:hover { border-color: var(--b-text); } }
 
 .fede {
@@ -403,7 +416,7 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
 }
 .fede-bild img { width: 100%; max-width: 520px; }
 .fede-zitat { font-size: var(--t-mittel); font-style: italic; font-weight: 340; line-height: 1.4; max-width: 34rem; }
-.fede-zitat::before { content: ""; display: block; width: 3rem; height: 1px; background: var(--mattgold); margin-bottom: 1rem; }
+.fede-zitat::before { content: ""; display: block; width: 3rem; height: 2px; background: var(--b-akzent); margin-bottom: 1rem; }
 
 .fundstuecke { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); grid-template-rows: auto auto; gap: clamp(2rem, 1rem + 3vw, 4rem) clamp(1.5rem, 1rem + 2.5vw, 3.5rem); }
 .fundstueck { display: grid; gap: 1rem; align-content: start; }
@@ -432,6 +445,9 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
 .steine-text { grid-column: 2; display: grid; gap: 1.1rem; color: var(--b-leise); align-self: end; }
 .steine .galerie { grid-column: 1 / -1; columns: auto; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 0.5rem + 2vw, 2.75rem); margin-top: clamp(2.5rem, 2rem + 2vw, 4rem); }
 .steine .stueck { margin: 0; }
+.steine-detail { grid-column: 1 / -1; margin-top: clamp(2.5rem, 2rem + 2vw, 4rem); }
+.steine-detail img { width: 100%; max-width: 1600px; box-shadow: var(--schatten-fund); }
+.steine-detail .fundzettel, .eheringe .fundzettel { color: var(--b-text); }
 @media (max-width: 59.99em) {
   .steine-raster { grid-template-columns: 1fr; }
   .steine-satz, .steine-text { grid-column: 1; }
@@ -492,7 +508,7 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
   border: 1px solid var(--b-linie); border-radius: 1px; background: oklch(97% 0.004 95 / 0.55);
   font-size: 1.0625rem; transition: background-color 0.25s, color 0.25s, border-color 0.25s;
 }
-.chips input:checked + span, .nadel input:checked + span { background: var(--tinte); color: var(--licht); border-color: var(--tinte); }
+.chips input:checked + span, .nadel input:checked + span { background: var(--ladengruen); color: var(--tinte); border-color: var(--ladengruen-tief); }
 .chips input:focus-visible + span, .nadel input:focus-visible + span { outline: 2px solid var(--tinte); outline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { .chips label:hover span, .nadel:hover span { border-color: var(--b-text); } }
 .probierstein {
@@ -551,8 +567,8 @@ html:not(.js) .wechsel > [data-seite="b"] { display: none; }
 .zeiten-zusatz { color: var(--b-leise); }
 .gruss { grid-column: 1 / -1; display: grid; justify-items: center; gap: 1.5rem; padding-top: clamp(3rem, 2rem + 3vw, 5rem); text-align: center; }
 .gruss p { font-size: var(--t-satz); font-weight: 300; line-height: 1.15; }
-.gruss .feder { width: min(46rem, 92%); color: var(--mattgold); --feder-breite: 0.8; }
-@media (max-width: 59.99em) { .besuch-raster { grid-template-columns: 1fr; } .gruss .feder { --feder-breite: 1.1; } }
+.gruss .feder { width: min(46rem, 92%); color: var(--mattgold); }
+@media (max-width: 59.99em) { .besuch-raster { grid-template-columns: 1fr; } }
 
 /* ───────── Fuß ───────── */
 
