@@ -41,9 +41,10 @@
   --champagner: oklch(82% 0.05 82);      /* gebürstetes, mattiertes Gold, aufgehellt */
   --mattgold: oklch(80% 0.1 82);         /* Unterschrift und Ornament, nie Fließtext */
   /* Ladengrün: der Wandsockel im Laden (Foto gemessen 60 % 0.09 122, Belichtung ausgeglichen) */
-  --ladengruen: oklch(66% 0.12 124);
-  --ladengruen-hell: oklch(82% 0.13 124);  /* Akzent auf dunklem Grund */
-  --ladengruen-tief: oklch(40% 0.085 124); /* Akzent auf hellem Grund */
+  /* Fassung ohne Grün: alle Akzente in mattem Gold */
+  --ladengruen: var(--mattgold);
+  --ladengruen-hell: var(--mattgold);
+  --ladengruen-tief: oklch(40% 0.07 70);
   --stein: oklch(17.5% 0.006 250);       /* Probierstein */
 
   /* Text auf hellem und dunklem Grund */
@@ -652,7 +653,7 @@ h1, h2, h3, .satz { font-weight: 330; letter-spacing: -0.005em; line-height: 1.0
 .bogen-disthen, .bogen-rost, .bogen-gold, .bogen-gruen { margin-inline: clamp(0rem, 2vw, 2rem); }
 
 /* Leiste und Fuß aus demselben Stein */
-.leiste { background: color-mix(in oklch, var(--stein-tief) 94%, transparent); border-bottom: 1px solid color-mix(in oklch, var(--ladengruen) 45%, var(--stein-kante)); }
+.leiste { background: color-mix(in oklch, var(--stein-tief) 94%, transparent); border-bottom: 1px solid var(--stein-kante); }
 .leiste-kapitel { font-family: var(--titel); font-size: 1.15rem; color: var(--silber-leise); }
 .haupt-nav a, .leiste-tel, .leiste-anfrage { font-size: 0.9375rem; letter-spacing: 0.01em; }
 .fuss { background: var(--stein-tief); border-top: 1px solid var(--stein-kante); color: var(--silber-leise); }
@@ -691,7 +692,7 @@ h1, h2, h3, .satz { font-weight: 330; letter-spacing: -0.005em; line-height: 1.0
 
 /* Anfrage auf dem Stein */
 .chips span, .nadel span { background: oklch(21% 0.006 250); border-color: var(--b-linie); font-family: var(--text); font-size: 1rem; }
-.chips input:checked + span, .nadel input:checked + span { background: var(--ladengruen); color: var(--stein); border-color: var(--ladengruen-hell); }
+.chips input:checked + span, .nadel input:checked + span { background: var(--silber); color: var(--stein); border-color: var(--silber); }
 .chips input:focus-visible + span, .nadel input:focus-visible + span { outline-color: var(--silber); }
 .frage legend { font-size: clamp(1.5rem, 1.2rem + 1vw, 2.1rem); }
 .probierstein { box-shadow: 0 0 0 1px var(--stein-kante), 0 1.6rem 2.6rem -1.4rem oklch(0% 0 0 / 0.9); }
