@@ -6,25 +6,22 @@
   const ruhig = matchMedia('(prefers-reduced-motion: reduce)');
   const feinZeiger = matchMedia('(hover: hover) and (pointer: fine)');
 
-  /* ───── Auftritt: erst wenn die Seite steht ───── */
-  // Nach dem letzten Zug fällt die Maske weg — die Unterschrift steht dann vollständig.
-  // (animationend feuert in Masken nicht verlässlich, daher die Dauer aus den Zügen.)
-  const zuege = $$('.schreibzuege path');
-  const maskeWeg = () => $('.unterschrift-gross use')?.removeAttribute('mask');
+  /* ───── Die Unterschrift schreibt sich: im Auftakt nach dem Laden, im Gruß beim Hinsehen ───── */
+  const auftaktFeder = $('.feder-auftakt');
   let begonnen = false;
-  const auftritt = () => {
-    if (begonnen) return; begonnen = true;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      document.body.classList.add('geladen');
-      const l = zuege[zuege.length - 1];
-      if (!l) return;
-      if (ruhig.matches) return maskeWeg();
-      const s = (v) => parseFloat(l.style.getPropertyValue(v)) || 0;
-      setTimeout(maskeWeg, (s('--v') + s('--t') + 0.55 + 0.2) * 1000);
-    }));
+  const schreiben = () => {
+    if (begonnen || !auftaktFeder) return; begonnen = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => auftaktFeder.classList.add('schreibt')));
   };
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(auftritt);
-  setTimeout(auftritt, 1200);
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(schreiben, 350));
+  setTimeout(schreiben, 1600);
+  const grussFeder = $('.feder-gruss');
+  if (grussFeder && 'IntersectionObserver' in window) {
+    const b = new IntersectionObserver((e) => {
+      if (e.some((x) => x.isIntersecting)) { grussFeder.classList.add('schreibt'); b.disconnect(); }
+    }, { threshold: 0.6 });
+    b.observe(grussFeder);
+  } else grussFeder?.classList.add('schreibt');
 
   /* ───── Leiste weicht beim Runterscrollen aus ───── */
   const leiste = $('.leiste');
@@ -70,21 +67,6 @@
   }, { rootMargin: '-30% 0px -60% 0px' });
   abschnitte.forEach((a) => kapitelBeob.observe(a));
 
-  /* ───── Auftreten beim Scrollen, Geschwister leicht versetzt ───── */
-  const zeigen = $$('.zeigen');
-  if ('IntersectionObserver' in window && !ruhig.matches) {
-    const beob = new IntersectionObserver((eintraege) => {
-      let n = 0;
-      for (const e of eintraege) {
-        if (!e.isIntersecting) continue;
-        e.target.style.setProperty('--folge', `${Math.min(n++, 4) * 90}ms`);
-        e.target.classList.add('da');
-        beob.unobserve(e.target);
-      }
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    zeigen.forEach((el) => beob.observe(el));
-  } else zeigen.forEach((el) => el.classList.add('da'));
-
   /* ───── Reiter ───── */
   const reiter = $('.reiter');
   if (reiter) {
@@ -99,8 +81,6 @@
         tafeln[j].hidden = !an;
       });
       tafeln[i].classList.remove('blendet'); void tafeln[i].offsetWidth; tafeln[i].classList.add('blendet');
-      // Bilder in der neuen Tafel sofort zeigen
-      $$('.zeigen', tafeln[i]).forEach((el) => el.classList.add('da'));
       if (fokus) { tabs[i].focus(); tabs[i].scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
     };
     tabs.forEach((t, i) => {
@@ -127,7 +107,7 @@
     aBild.removeAttribute('srcset');
     aBild.src = k.dataset.gross;
     aBild.alt = img.alt;
-    const et = k.closest('li, figure')?.querySelector('.etikett');
+    const et = k.closest('li, figure')?.querySelector('.etikett, .fundzettel');
     aEtikett.innerHTML = et ? et.innerHTML : '';
     $('.lupe-hinweis', aEtikett)?.remove();
   };
@@ -399,7 +379,7 @@
     const pos = (e) => { const r = stein.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; };
     stein.addEventListener('pointerdown', (e) => {
       if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
-      if (!letzteNadel) { $('.probierstein-stand').textContent = 'Wählen Sie zuerst eine Probiernadel.'; return; }
+      if (!letzteNadel) { $('.probierstein-stand').textContent = 'Bitte wählen Sie zuerst ein Metall.'; return; }
       zug = { metall: letzteNadel, linie: [pos(e)], fasern: fasern(zufall(Date.now() % 100000 + 1)), alpha: 1, fortschritt: 1, frei: true };
       streiche.push(zug);
       stein.setPointerCapture(e.pointerId);
@@ -417,7 +397,103 @@
   function steinStand() {
     const gewaehlt = nadeln.filter((n) => n.checked).map((n) => NAME(n.value));
     const el = $('.probierstein-stand');
-    el.textContent = gewaehlt.length ? `Auf dem Stein: ${liste(gewaehlt)}.` : '';
+    el.textContent = gewaehlt.length ? `Gewählt: ${liste(gewaehlt)}` : '';
+  }
+
+
+  /* ───── Unterschrift als Probierstrich: matter Goldabrieb entlang der Federlinie ───── */
+  const GOLD = [218, 181, 104]; // --mattgold als sRGB
+  const strichFelder = $$('.strich-feld');
+  const strichFasern = (n, saat) => {
+    const zz = zufall(saat);
+    return Array.from({ length: n }, (_, i) => ({
+      i, o: (zz() + zz() + zz()) / 1.5 - 1, w: 0.45 + zz() * 0.9, a: (0.22 + zz() * 0.4),
+      h: zz() * 0.22 - 0.08, wackel: zz() * 6.28,
+    }));
+  };
+  const einrichten = (feld) => {
+    const svg = $('.feder', feld), cv = $('canvas.strich', feld);
+    if (!svg || !cv || !cv.getContext) return null;
+    const pfade = $$('.zug', svg);
+    const zuege = pfade.map((pfad, k) => {
+      const L = pfad.getTotalLength(), n = Math.max(2, Math.ceil(L / 0.35));
+      const pts = [];
+      for (let j = 0; j <= n; j++) { const q = pfad.getPointAtLength((L * j) / n); pts.push([q.x, q.y]); }
+      const st = pfad.style;
+      return { pts, v: parseFloat(st.getPropertyValue('--v')) || 0, t: parseFloat(st.getPropertyValue('--t')) || 0.3, fasern: strichFasern(9, 101 + k * 7), bis: 0 };
+    });
+    const ctx = cv.getContext('2d');
+    const zustand = { feld, svg, cv, ctx, zuege, start: 0, laeuft: false, fertig: false };
+    const masse = () => {
+      const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+      cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+      const sv = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+      zustand.s = (sv.width / vb.width) * dpr;
+      zustand.ox = (sv.left - r.left) * dpr - vb.x * zustand.s;
+      zustand.oy = (sv.top - r.top) * dpr - vb.y * zustand.s;
+      zustand.dicke = Math.max(2.4 * dpr, 0.95 * zustand.s);
+      zustand.zuege.forEach((z) => { z.bis = 0; });
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      if (zustand.fertig) zeichneBis(zustand, Infinity);
+    };
+    zustand.masse = masse;
+    masse();
+    new ResizeObserver(() => masse()).observe(feld);
+    feld.classList.add('strich-an');
+    return zustand;
+  };
+  // Zeichnet jeden Zug bis zur Zeit t (Sekunden) weiter; nur das Neue wird gemalt.
+  const zeichneBis = (z, t) => {
+    const { ctx, s, ox, oy, dicke } = z;
+    ctx.lineCap = 'round';
+    for (const zug of z.zuege) {
+      const anteil = t === Infinity ? 1 : Math.min(1, Math.max(0, (t - zug.v) / zug.t));
+      const ziel = Math.floor(anteil * (zug.pts.length - 1));
+      if (ziel <= zug.bis) continue;
+      for (const f of zug.fasern) {
+        ctx.globalAlpha = f.a;
+        const d = f.h * 255;
+        ctx.strokeStyle = `rgb(${GOLD[0] + d | 0},${GOLD[1] + d | 0},${GOLD[2] + d | 0})`;
+        ctx.lineWidth = f.w * Math.max(1, s / 3.2);
+        ctx.beginPath();
+        let offen = false;
+        for (let j = Math.max(0, zug.bis - 1); j <= ziel; j++) {
+          if (hash(f.i + zug.v * 13, Math.floor(j / 9)) < 0.07) { offen = false; continue; }
+          const a = zug.pts[Math.max(0, j - 1)], b = zug.pts[Math.min(zug.pts.length - 1, j + 1)];
+          let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
+          const o = f.o * dicke / 2 + Math.sin(j / 7 + f.wackel) * 0.35 * (dicke / 4);
+          const x = ox + zug.pts[j][0] * s + nx * o, y = oy + zug.pts[j][1] * s + ny * o;
+          if (offen) ctx.lineTo(x, y); else { ctx.moveTo(x, y); offen = true; }
+        }
+        ctx.stroke();
+      }
+      zug.bis = ziel;
+    }
+    ctx.globalAlpha = 1;
+  };
+  const streichen = (z) => {
+    if (!z || z.laeuft || z.fertig) return;
+    if (ruhig.matches) { z.fertig = true; zeichneBis(z, Infinity); return; }
+    z.laeuft = true;
+    const ende = Math.max(...z.zuege.map((q) => q.v + q.t));
+    const start = performance.now();
+    const schritt = (jetzt) => {
+      const t = (jetzt - start) / 1000;
+      zeichneBis(z, t);
+      if (t < ende + 0.05) requestAnimationFrame(schritt);
+      else { z.laeuft = false; z.fertig = true; }
+    };
+    requestAnimationFrame(schritt);
+  };
+  if (strichFelder.length) {
+    const fertigZustaende = strichFelder.map(einrichten);
+    const [auftakt, ...rest] = fertigZustaende;
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(() => streichen(auftakt), 350));
+    rest.forEach((z) => {
+      if (!z) return;
+      const b = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { streichen(z); b.disconnect(); } }, { threshold: 0.6 });
+      b.observe(z.feld);
+    });
   }
 
   /* ───── Anfrage: Auswahl → Nachricht ───── */
@@ -439,12 +515,12 @@
     if (stein === 'ohne') satz += ', ohne Stein';
     satz += '.';
     return [
-      'Guten Tag Frau Kusche,', '',
+      'Sehr geehrte Frau Kusche,', '',
       satz,
-      stein === 'eigener' ? 'Einen eigenen Stein bringe ich mit.' : null,
-      anlass ? `Anlass / Wunschtermin: ${anlass}` : null,
-      was === 'Eheringe' ? 'Wann dürfen wir zu zweit zur Beratung vorbeikommen?' : 'Wann darf ich zur Beratung vorbeikommen?', '',
-      'Viele Grüße',
+      stein === 'eigener' ? 'Einen eigenen Stein würde ich gern mitbringen.' : null,
+      anlass ? `Anlass oder Termin: ${anlass}` : null,
+      was === 'Eheringe' ? 'Gern würden wir gemeinsam einen Termin zur Beratung vereinbaren.' : 'Gern würde ich einen Termin zur Beratung vereinbaren.', '',
+      'Mit freundlichen Grüßen',
       name || null,
     ];
   };
@@ -492,7 +568,7 @@
     $('.brief-kopieren', form).addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(feld.value); }
       catch { feld.select(); document.execCommand('copy'); }
-      stand.textContent = 'Der Text ist kopiert.';
+      stand.textContent = 'Der Text ist in der Zwischenablage.';
       setTimeout(() => { stand.textContent = ''; }, 3500);
     });
   }

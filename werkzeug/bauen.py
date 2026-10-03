@@ -56,10 +56,6 @@ GALERIEN = {
         ("chip-brosche", "Computerelement", "Silber, teilweise Goldauflage", "Brosche aus Silber mit Goldauflage und einem Computerbauteil"),
         ("chrysokoll-brosche", "Chrysokoll, Goldstaub", "Palladium {500}", "Blattförmige Brosche mit Chrysokoll und Goldstaub, auf blauer Seide"),
     ],
-    "steine": [
-        ("steine-opale", "Einschlussquarze, Boulderopale, Uwarowit, vulkanische Koralle", "", "Lose Edelsteine aus der Sammlung, in Rotbraun, schillerndem Blau, Grün und Korallenrot, auf hellem Grund"),
-        ("steine-farben", "Sugilith, Bergkristall, Paraibaturmalin, Heterosit, Jaspis", "", "Lose Edelsteine aus der Sammlung, in Violett, Flieder, Türkis, Klar und gestreiftem Orange, auf hellem Grund"),
-    ],
 }
 
 
@@ -81,9 +77,9 @@ def galerie(name):
         a, gross = bildattrs(bild)
         sizes = "(min-width: 60em) 24rem, (min-width: 40em) 31vw, 46vw" if name != "steine" else "(min-width: 60em) 40vw, 92vw"
         metall_html = f'\n      <span class="etikett-metall">{punzen(metall)}</span>' if metall else ""
-        zeilen.append(f'''  <li class="stueck zeigen">
+        zeilen.append(f'''  <li class="stueck">
     <button class="stueck-bild" type="button" data-gross="{gross}"><img src="{a['src']}" srcset="{a['srcset']}" sizes="{sizes}" width="{a['width']}" height="{a['height']}" loading="lazy" alt="{html.escape(alt)}"></button>
-    <p class="etikett"><span class="etikett-stein">{html.escape(stein)}</span>{metall_html}</p>
+    <p class="etikett fundzettel"><span class="etikett-stein">{html.escape(stein)}</span>{metall_html}</p>
   </li>''')
     zeilen.append("</ul>")
     return "\n".join(zeilen)
@@ -111,6 +107,31 @@ def schreibt():
             + "".join(pfade) +
             f'</g></mask></defs><use href="#unterschrift" mask="url(#schreibmaske)"/></svg>')
 
+
+def feder(name):
+    """Ihr Name in ruhiger Schreibschrift (Corinthia), Zug für Zug geschrieben.
+
+    Sichtbar ist der echte Umriss der Schrift mit Haar- und Schattenstrichen; freigelegt
+    wird er durch eine Maske aus der Mittellinie (Klasse .zug, mit --v Beginn und --t Dauer).
+    Tempo aus der gemessenen Länge, kleine Pause, wo die Feder absetzt. Wann geschrieben
+    wird, entscheidet das CSS (Klasse .schreibt). Der Probierstein liest dieselben Züge.
+    """
+    z = ZEICHEN["schriftzug"]
+    tempo = 330.0  # Einheiten der viewBox pro Sekunde (≈ 4,5 s für den ganzen Namen)
+    t, pfade, letzt_x = 0.0, [], None
+    for zug in z["feder"]:
+        if letzt_x is not None and zug["x"] - letzt_x > 9:
+            t += 0.22  # Feder setzt ab
+        d = max(0.12, zug["l"] / tempo)
+        pfade.append(f'<path class="zug" pathLength="1" style="--v:{t:.2f}s;--t:{d:.2f}s" d="{zug["d"]}"/>')
+        t += d * 0.92
+        letzt_x = min(zug["x"], 9000) + 4
+    mid = f"zugmaske-{name}"
+    return (f'<svg class="feder feder-{name}" viewBox="{z["viewBox"]}" role="img" aria-label="Michaela Kusche" data-dauer="{t:.2f}">'
+            f'<defs><mask id="{mid}" maskUnits="userSpaceOnUse">'
+            f'<g fill="none" stroke="#fff" stroke-width="{z["maskenbreite"]}" stroke-linecap="round" stroke-linejoin="round">'
+            + "".join(pfade) +
+            f'</g></mask></defs><path class="umriss" d="{z["d"]}" mask="url(#{mid})"/></svg>')
 
 def zwischen(s, marke, inhalt):
     muster = re.compile(rf"(<!-- {re.escape(marke)} -->).*?(<!-- /{re.escape(marke)} -->)", re.S)
@@ -141,6 +162,8 @@ def main():
         s = pfad.read_text()
         s = zwischen(s, "zeichen", sprite())
         s = zwischen(s, "unterschrift:schreibt", schreibt())
+        for name in ("auftakt", "gruss", "fuss"):
+            s = zwischen(s, f"feder:{name}", feder(name))
         for name in GALERIEN:
             s = zwischen(s, f"galerie:{name}", "\n" + galerie(name) + "\n")
         s = img_fuellen(s)

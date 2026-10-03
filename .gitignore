@@ -1,3 +1,5 @@
 quelle/
 __pycache__/
 .DS_Store
+.claude/skills/impeccable/node_modules/
+.impeccable/review/
