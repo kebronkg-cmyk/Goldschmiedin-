@@ -1,0 +1,19 @@
+name: Vorschau anstoßen
+
+# Ein Push auf arbeit/version-* startet die Veröffentlichung neu (vom Stand main aus),
+# damit die Vorschau unter /vorschau/<name>/ aktuell ist. main selbst ändert sich dabei nicht.
+
+on:
+  push:
+    branches: ['arbeit/version-*']
+
+permissions:
+  actions: write
+
+jobs:
+  anstossen:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run deploy-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}
