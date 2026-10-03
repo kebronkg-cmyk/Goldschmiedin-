@@ -1,5 +1,9 @@
 name: Seite veröffentlichen
 
+# Veröffentlicht main als Seite und jeden Zweig arbeit/version-<n>-<name> als Vorschau
+# unter /vorschau/<name>/ (nicht von Suchmaschinen erfasst). Pushes auf solche Zweige
+# stoßen diesen Ablauf über vorschau.yml an; ausgeliefert wird immer vom Stand main aus.
+
 on:
   push:
     branches: [main]
@@ -22,11 +26,25 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Nur die Seite ausliefern (ohne Werkzeug und Notizen)
+        with:
+          fetch-depth: 0
+      - name: Seite und Vorschauen zusammenstellen
         run: |
+          DATEIEN="index.html impressum.html datenschutz.html stil.css seite.js favicon.svg apple-touch-icon.png og.jpg schrift bilder"
           mkdir _site
-          cp -r index.html impressum.html datenschutz.html stil.css seite.js favicon.svg apple-touch-icon.png og.jpg schrift bilder _site/
+          cp -r $DATEIEN _site/
           rm -f _site/bilder/mass.json
+          for zweig in $(git for-each-ref --format='%(refname:short)' 'refs/remotes/origin/arbeit/version-*'); do
+            name=$(echo "${zweig#origin/arbeit/}" | sed -E 's/^version-[0-9]+-//')
+            ziel="_site/vorschau/$name"
+            mkdir -p "$ziel"
+            git archive "$zweig" -- $DATEIEN | tar -x -C "$ziel"
+            rm -f "$ziel/bilder/mass.json"
+            for seite in "$ziel"/*.html; do
+              sed -i 's|<head>|<head>\n<meta name="robots" content="noindex, nofollow">|' "$seite"
+            done
+            echo "Vorschau: $zweig -> /vorschau/$name/"
+          done
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
